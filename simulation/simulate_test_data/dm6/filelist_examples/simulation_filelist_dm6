@@ -1,0 +1,7 @@
+testing_dataset_0/chr2L your_path_to/Dm6.transposon.fa 137547960 23513712 100 5 50 ccs
+testing_dataset_0/chr2R your_path_to/Dm6.transposon.fa 137547960 25286936 100 5 50 ccs
+testing_dataset_0/chr3L your_path_to/Dm6.transposon.fa 137547960 28110227 100 5 50 ccs
+testing_dataset_0/chr3R your_path_to/Dm6.transposon.fa 137547960 32079331 100 5 50 ccs
+testing_dataset_0/chr4 your_path_to/Dm6.transposon.fa 137547960 1348131 100 5 50 ccs
+testing_dataset_0/chrX your_path_to/Dm6.transposon.fa 137547960 23542271 100 5 50 ccs
+testing_dataset_0/chrY your_path_to/Dm6.transposon.fa 137547960 3667352 100 5 50 ccs
