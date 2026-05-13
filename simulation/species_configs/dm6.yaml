@@ -1,0 +1,59 @@
+# dm6 (Drosophila melanogaster) 配置示例
+# 使用已有的参考文件
+
+species: dm6
+mode: 1
+
+# 输出目录
+output_dir: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/v4
+
+# 参考文件路径
+reference:
+  template: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_template.fa
+  transposon: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_clean.transposon.fa
+  repeat_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.repeat.bed
+  gap_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.gap.bed
+
+# 模拟参数
+simulation:
+  population_size: 100
+  sub_population_size: 5
+  germline_count: 1000
+  avg_somatic_count: 50
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.1
+  nest_prob: 0.1
+
+# 测序参数
+sequencing:
+  depths: [10, 20, 30, 40, 50]
+  protocols: [ccs, clr, ont]
+
+# 数据集配置
+datasets:
+  50: 20
+  40: 20
+  30: 20
+  20: 20
+  10: 20
+
+# SLURM 配置
+slurm:
+  partition: 4hours
+  threads: 30
+  mem_simulation: 10G
+  mem_merge: 40G
+  mem_minimap2: 60G
+  mem_label: 30G
+  time: "4:00:00"
+  array_limit: 10
+
+# Conda 环境
+conda_env: simulation
+conda_path: /zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+
+# 程序路径
+programs:
+  simulation_dir: /data/tusers/zhongrenhu/for_SMS/bin/simulation
+  label_dir: /data/tusers/zhongrenhu/for_SMS/bin/demo3/test_with_simulation

@@ -1,0 +1,59 @@
+# 水稻 (Oryza sativa) 配置模板
+# 请根据实际情况修改路径和参数
+
+species: rice
+mode: 1
+
+# 输出目录 - 请修改为实际路径
+output_dir: /path/to/rice/simulation/output
+
+# 参考文件路径 - 请修改为实际路径
+reference:
+  template: /path/to/rice_template.fa           # 参考基因组模板 (需要 .fai 索引)
+  transposon: /path/to/rice_transposon.fa       # TE consensus 序列 (需要 .fai 索引)
+  repeat_bed: /path/to/rice_repeat.bed          # RepeatMasker 注释
+  gap_bed: /path/to/rice_gap.bed                # Gap 区域注释
+
+# 模拟参数 - 根据水稻特性调整
+simulation:
+  population_size: 100                # 群体基因组大小
+  sub_population_size: 5              # 子群体大小
+  germline_count: 1000                # Germline insertion 数量
+  avg_somatic_count: 50               # 平均 somatic insertion 数量
+  min_distance: 9000                  # 最小距离 (根据水稻基因组大小调整)
+  divergence_rate: 0                  # TE divergence rate
+  trunc_prob: 0.1                     # Truncation 概率
+  nest_prob: 0.1                      # Nested insertion 概率
+
+# 测序参数
+sequencing:
+  depths: [10, 20, 30, 40, 50]        #测序深度
+  protocols: [ccs, clr, ont]          # 测序协议
+
+# 数据集配置
+datasets:
+  50: 20
+  40: 20
+  30: 20
+  20: 20
+  10: 20
+
+# SLURM 配置 - 根据集群调整
+slurm:
+  partition: 4hours
+  threads: 30
+  mem_simulation: 10G
+  mem_merge: 40G
+  mem_minimap2: 60G
+  mem_label: 30G
+  time: "4:00:00"
+  array_limit: 10
+
+# Conda 环境
+conda_env: simulation
+conda_path: /zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+
+# 程序路径
+programs:
+  simulation_dir: /data/tusers/zhongrenhu/for_SMS/bin/simulation
+  label_dir: /data/tusers/zhongrenhu/for_SMS/bin/demo3/test_with_simulation

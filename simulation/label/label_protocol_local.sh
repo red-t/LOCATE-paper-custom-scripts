@@ -10,7 +10,7 @@ function help_info(){
     echo -e "\t-P <numProcess>"
     echo -e "\t-T <numThread>"
     echo -e "\t--refTe <refTe.fa>"
-    echo -e "\t--blacklist <blacklist.fa>"
+    echo -e "\t--blacklist <blacklist.bed>"
     echo -e "\t--minLen <minLen>"
     echo -e "\t--TEMP3 <path> path to TEMP3.py"
     echo -e "\t--subSize <subSize> size of sub-population genome"

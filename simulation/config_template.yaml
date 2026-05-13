@@ -1,0 +1,68 @@
+# Simulation Pipeline 配置文件模板
+# 复制此文件到 species_configs/<species>.yaml 并修改相应参数
+
+species: rice                          # 物种名称 (human/fly/dm6/rice 等)
+mode: 1                                # 1=训练数据, 2=测试数据
+
+# 输出目录
+output_dir: /path/to/output            # 模拟数据输出目录
+
+# 参考文件路径
+reference:
+  template: /path/to/template.fa       # 参考基因组模板 (需要 .fai 索引)
+  transposon: /path/to/transposon.fa   # TE consensus 序列 (需要 .fai 索引)
+  repeat_bed: /path/to/repeat.bed      # RepeatMasker 注释
+  gap_bed: /path/to/gap.bed            # Gap 区域注释
+
+# 模拟参数
+simulation:
+  population_size: 100                 # 群体基因组大小 (haplotypes 数量)
+  sub_population_size: 5               # 子群体大小，每个 batch 处理的 haplotypes
+  germline_count: 1000                 # 每个频率梯度的 germline insertion 数量
+  avg_somatic_count: 50                # 每个 genome 平均 somatic insertion 数量
+  min_distance: 9000                   # TE insertion 之间的最小距离
+  divergence_rate: 0                   # TE 序列 divergence rate (percent)
+  trunc_prob: 0.1                      # Truncation 概率
+  nest_prob: 0.1                       # Nested insertion 概率
+
+#测序参数
+sequencing:
+  depths: [10, 20, 30, 40, 50]         #测序深度列表
+  protocols: [ccs, clr, ont]           # 测序协议列表
+  ngs_read_length: 150                 # NGS read length (可选)
+  ngs_inner_distance: 200              # NGS inner distance (可选)
+  ngs_std_dev: 20                      # NGS std dev (可选)
+
+# 数据集配置
+datasets:
+  # 每个深度生成多少个数据集
+  # 格式: depth -> count
+  50: 20
+  40: 20
+  30: 20
+  20: 20
+  10: 20
+
+# SLURM 配置
+slurm:
+  partition: 4hours                    # SLURM partition
+  threads: 30                          # 线程数
+  mem_simulation: 10G                  # simulation 任务内存
+  mem_merge: 40G                       # merge 任务内存
+  mem_minimap2: 60G                    # minimap2 任务内存
+  mem_label: 30G                       # label 任务内存
+  time: "4:00:00"                        # 任务时间限制
+  array_limit: 10                      # 并行任务数限制
+
+# Conda 环境
+conda_env: simulation                   # conda 环境名称
+conda_path: /zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+
+# Step 6 分类参数
+classification:
+  somatic_freq: 0.01                        # germline/somatic 频率阈值
+
+#程序路径 (自动检测，通常不需要修改)
+programs:
+  simulation_dir: null                 # simulation 脚本目录，null 表示自动检测
+  label_dir: null                      # label 脚本目录，null 表示自动检测

@@ -19,7 +19,13 @@ mamba install samtools=1.17
 mamba install minimap2=2.26
 ```
 
-### 1.4 Cython (3.0.6)
+### 1.4 pysam
+
+```shell
+mamba install pysam
+```
+
+### 1.5 Cython (3.0.6)
 
 ```shell
 pip install cython==3.0.6
@@ -28,7 +34,6 @@ pip install cython==3.0.6
 ## 2. Compile
 
 ```shell
-cd develop
 python setup.py build_ext -i
 ```
 

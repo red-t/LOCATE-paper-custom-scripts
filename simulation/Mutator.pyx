@@ -28,8 +28,8 @@ cdef class TGS_Mutator:
     cdef str mutateseq(self, str seq):
         if(self.__er < 0.0000000001):
             return seq
-        
-        # err_f = open('ErrorAll.txt', 'a')
+
+        seq = seq.upper()
         cdef:
             list muts = []
             int i, j, length = len(seq)
@@ -90,7 +90,8 @@ cdef class NGS_Mutator:
     cdef str mutateseq(self, str seq):
         if(self.__er < 0.0000000001):
             return seq
-        
+
+        seq = seq.upper()
         cdef:
             list lseq = list(seq)
             int i, j, length = len(lseq)
@@ -116,7 +117,8 @@ cdef class ExhaustiveSeqMutator:
     cdef str mutateseq(self, str seq):
         if(self.__er < 0.0000000001):
             return seq
-        
+
+        seq = seq.upper()
         cdef:
             list lseq = list(seq)
             int i, j, length = len(lseq)

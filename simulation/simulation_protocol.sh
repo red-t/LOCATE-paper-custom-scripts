@@ -137,6 +137,15 @@ done
 
 
 ##########################
+### Switch Working Dir ###
+##########################
+if [ -n "$WORKING_DIR" ]; then
+    cd "$WORKING_DIR" || { echo "ERROR: Cannot cd to $WORKING_DIR"; exit 1; }
+    echo "Working directory: $(pwd)"
+fi
+
+
+##########################
 ### Default Parameters ###
 ##########################
 [ -z $D_RATE ] && D_RATE=0
@@ -182,9 +191,16 @@ echo -e "TGS_MEANL:\t${TGS_MEANL}"
 ####################
 ### Program Path ###
 ####################
-source ${your_path_to}/conda.sh
-conda activate simulation
 prog_path=`readlink -f $0` && prog_path=`dirname $prog_path`
+
+# 激活 conda 环境
+if [ -n "$CONDA_PATH" ] && [ -n "$CONDA_ENV" ]; then
+    source "$CONDA_PATH"
+    conda activate "$CONDA_ENV"
+elif [ -f "/home/zhongrenhu/Software/miniforge3/etc/profile.d/conda.sh" ]; then
+    source /home/zhongrenhu/Software/miniforge3/etc/profile.d/conda.sh
+    conda activate simulation
+fi
 
 
 #############################################

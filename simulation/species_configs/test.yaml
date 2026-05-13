@@ -1,0 +1,69 @@
+# dm6 (Drosophila melanogaster) 配置示例
+# 使用已有的参考文件
+
+species: dm6
+mode: 1
+share_pgdf: false
+
+# 输出目录
+output_dir: /zata/zippy/boxu/for_hzr/Software/SimulationTest
+
+# 参考文件路径
+reference:
+  template: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_template.fa
+  transposon: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_clean.transposon.fa
+  repeat_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.repeat.bed
+  gap_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.gap.bed
+
+# 模拟参数
+simulation:
+  population_size: 10
+  sub_population_size: 2
+  germline_count: 500
+  avg_somatic_count: 5
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.1
+  nest_prob: 0.1
+
+# 测序参数
+sequencing:
+  depths: [10]
+  protocols: [ccs, ont]
+
+# 数据集配置
+datasets:
+  10: 1
+
+# SLURM 配置
+slurm:
+  partition: gpu
+  threads: 24
+  mem_simulation: 20G
+  mem_merge: 20G
+  mem_minimap2: 20G
+  mem_label: 20G
+  time: "4:00:00"
+  array_limit: 5
+
+# Conda 环境
+conda_env: simulation
+conda_envs:
+  step0: simulation
+  step2: simulation
+  step4: TEMP3
+  step5: TEMP3
+conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
+
+# Step 6 分类参数
+classification:
+  somatic_freq: 0.11
+
+# 程序路径
+programs:
+  simulation_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation
+  label_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation/label
+  temp3_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/TEMP3
+  blacklist: /data/tusers/zhongrenhu/for_SMS/reference/dm6/benchmark/dm6.BlackList.bed
+  germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/germ_v4/Dedup/dm6_G_1V1
+  soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/soma_v4/Dedup/dm6_S_1V30

@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import argparse
+import os
 import pysam
 import glob
-from subprocess import Popen, PIPE, STDOUT, DEVNULL
+from subprocess import Popen, PIPE
 
 
 def get_parser():
@@ -151,9 +152,11 @@ def tp_filter(segf, tp_dict, fp_dict, oid_id, idxreads, rbf):
                     break
         
         wbf.close()
-        cmd_idx = ['samtools sort -o tmp.bam {} && mv tmp.bam {} && samtools index {}'.format(wbfn, wbfn, wbfn)]
-        idx_proc = Popen(cmd_idx, stderr=DEVNULL, shell=True, executable='/bin/bash')
-        exitcode = idx_proc.wait()
+        cmd = 'samtools sort -o tmp.bam {} && mv tmp.bam {} && samtools index {}'.format(wbfn, wbfn, wbfn)
+        idx_proc = Popen(cmd, shell=True, executable='/bin/bash', stdout=PIPE, stderr=PIPE)
+        _, stderr = idx_proc.communicate()
+        if idx_proc.returncode != 0:
+            print("ERROR: samtools failed for {}: {}".format(wbfn, stderr.decode()), flush=True)
 
 # ---------------------------------------------------------------
 
@@ -187,9 +190,11 @@ def fp_filter(segf, fp_dict, idxreads, rbf):
                     break
         
         wbf.close()
-        cmd_idx = ['samtools sort -o tmp.bam {} && mv tmp.bam {} && samtools index {}'.format(wbfn, wbfn, wbfn)]
-        idx_proc = Popen(cmd_idx, stderr=DEVNULL, shell=True, executable='/bin/bash')
-        exitcode = idx_proc.wait()
+        cmd = 'samtools sort -o tmp.bam {} && mv tmp.bam {} && samtools index {}'.format(wbfn, wbfn, wbfn)
+        idx_proc = Popen(cmd, shell=True, executable='/bin/bash', stdout=PIPE, stderr=PIPE)
+        _, stderr = idx_proc.communicate()
+        if idx_proc.returncode != 0:
+            print("ERROR: samtools failed for {}: {}".format(wbfn, stderr.decode()), flush=True)
 
 # ---------------------------------------------------------------
 
@@ -294,6 +299,9 @@ def deep_filter(tp_dict, ins2hg, chr):
 
             # open file for reading
             fn  = 'tp_{}.bam'.format(oid)
+            if not os.path.exists(fn):
+                print("WARNING: {} not found, skipping".format(fn), flush=True)
+                continue
             rbf = pysam.AlignmentFile(fn, 'rb', threads=5)
             
             # open file for writting
@@ -338,10 +346,10 @@ def deep_filter(tp_dict, ins2hg, chr):
                 # print("there are both true & flase support alignments of {}".format(oid))
                 cmd_idx = ['rm tp_{}.bam && rm tp_{}.bam.bai && samtools index tp_t_{}.bam && samtools index tp_f_{}.bam'.format(oid, oid, oid, oid)]
 
-            idx_proc = Popen(cmd_idx, stderr=DEVNULL, shell=True, executable='/bin/bash')
-            exitcode = idx_proc.wait()
-            if exitcode != 0:
-                raise Exception("Error: samtools index for {} failed".format(oid))
+            idx_proc = Popen(cmd_idx, shell=True, executable='/bin/bash', stdout=PIPE, stderr=PIPE)
+            _, stderr = idx_proc.communicate()
+            if idx_proc.returncode != 0:
+                raise Exception("Error: samtools index for {} failed: {}".format(oid, stderr.decode()))
     
     logf.close()
 
