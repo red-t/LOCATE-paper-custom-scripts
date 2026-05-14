@@ -1,0 +1,42 @@
+# Cython build artifacts
+*.so
+*.c
+*.cpp
+*.o
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Build directories
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Conda
+.env/
+.conda/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Simulation output (large data files)
+*.fasta
+*.fastq
+*.fq
+*.fa
+*.bam
+*.bai
+*.sam
+*.fai
+*.gzi
