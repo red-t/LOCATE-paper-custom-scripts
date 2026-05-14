@@ -10,10 +10,13 @@ output_dir: /zata/zippy/boxu/for_hzr/Software/SimulationTest
 
 # 参考文件路径
 reference:
-  template: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_template.fa
-  transposon: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_clean.transposon.fa
-  repeat_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.repeat.bed
-  gap_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.gap.bed
+  template: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_template.fa
+  transposon: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_clean.transposon.fa
+  repeat_bed: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.repeat.bed
+  gap_bed: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.gap.bed
+  blacklist: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.BlackList.bed
+  soma_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_S_1V30
+  germ_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_G_1V1
 
 # 模拟参数
 simulation:
@@ -47,8 +50,8 @@ slurm:
   array_limit: 5
 
 # Conda 环境
-conda_env: simulation
 conda_envs:
+  default: simulation
   step0: simulation
   step2: simulation
   step4: TEMP3
@@ -61,9 +64,6 @@ classification:
 
 # 程序路径
 programs:
-  simulation_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation
-  label_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation/label
-  temp3_dir: /zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/TEMP3
-  blacklist: /data/tusers/zhongrenhu/for_SMS/reference/dm6/benchmark/dm6.BlackList.bed
-  germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/germ_v4/Dedup/dm6_G_1V1
-  soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/soma_v4/Dedup/dm6_S_1V30
+  simulation_dir: null
+  label_dir: null
+  temp3_dir: null

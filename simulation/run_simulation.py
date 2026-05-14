@@ -56,9 +56,9 @@ def get_script_dir():
 def get_conda_env(config, step, default):
     """获取指定 step 的 conda 环境，支持按 step 覆盖"""
     conda_envs = config.get('conda_envs', {})
-    if isinstance(conda_envs, dict) and step in conda_envs:
-        return conda_envs[step]
-    return config.get('conda_env', default)
+    if isinstance(conda_envs, dict):
+        return conda_envs.get(step, conda_envs.get('default', default))
+    return default
 
 
 def parse_slurm_job_id(stdout):
@@ -313,7 +313,7 @@ def step2_simulation(config, dry_run=False, **kwargs):
 
     # 程序目录
     programs = config.get('programs', {})
-    simulation_dir = programs.get('simulation_dir') or '/zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation'
+    simulation_dir = programs.get('simulation_dir') or str(get_script_dir())
 
     # 日志目录
     log_dir = output_base / 'logs' / 'simulation'
@@ -553,7 +553,9 @@ def step5_label(config, dry_run=False, **kwargs):
 
     # 程序目录
     programs = config.get('programs', {})
-    label_dir = programs.get('label_dir') or '/zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation/label'
+    script_dir = get_script_dir()
+    simulation_dir = programs.get('simulation_dir') or str(script_dir)
+    label_dir = programs.get('label_dir') or str(Path(simulation_dir) / 'label')
 
     # 日志目录
     log_dir = output_base / 'logs' / 'label'
@@ -578,10 +580,12 @@ def step5_label(config, dry_run=False, **kwargs):
     env['CONDA_ENV'] = conda_env
     env['REF_TEMPLATE'] = ref_template
     env['LABEL_DIR'] = label_dir
-    env['TEMP3_DIR'] = programs.get('temp3_dir') or '/zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/TEMP3'
-    env['BLACKLIST'] = programs.get('blacklist', '')
-    env['GERM_MODEL'] = programs.get('germ_model', '')
-    env['SOMA_MODEL'] = programs.get('soma_model', '')
+    env['TEMP3_DIR'] = programs.get('temp3_dir') or str(Path(simulation_dir).parent / 'TEMP3')
+
+    ref = config.get('reference', {})
+    env['BLACKLIST'] = ref.get('blacklist', '')
+    env['GERM_MODEL'] = ref.get('germ_model', '')
+    env['SOMA_MODEL'] = ref.get('soma_model', '')
     env['SUBSIZE'] = str(config['simulation']['sub_population_size'])
     env['SLURM_LOG_DIR'] = str(output_base / 'logs')
 

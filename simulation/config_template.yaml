@@ -3,6 +3,7 @@
 
 species: rice                          # 物种名称 (human/fly/dm6/rice 等)
 mode: 1                                # 1=训练数据, 2=测试数据
+share_pgdf: false                      # 不同 protocol 之间是否共享 PGDF 文件 (true/false，true 表示不同 protocol 共享同一套 ground truth template)
 
 # 输出目录
 output_dir: /path/to/output            # 模拟数据输出目录
@@ -13,6 +14,9 @@ reference:
   transposon: /path/to/transposon.fa   # TE consensus 序列 (需要 .fai 索引)
   repeat_bed: /path/to/repeat.bed      # RepeatMasker 注释
   gap_bed: /path/to/gap.bed            # Gap 区域注释
+  blacklist: /path/to/blacklist.bed    # 可选: 黑名单区域 BED
+  germ_model: /path/to/germ_model/     # 可选: Germline 分类模型目录
+  soma_model: /path/to/soma_model/     # 可选: Somatic 分类模型目录
 
 # 模拟参数
 simulation:
@@ -55,8 +59,13 @@ slurm:
   array_limit: 10                      # 并行任务数限制
 
 # Conda 环境
-conda_env: simulation                   # conda 环境名称
-conda_path: /zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+conda_envs:
+  default: simulation
+  step0: simulation
+  step2: simulation
+  step4: TEMP3
+  step5: TEMP3
+conda_path: /you/path/to/mambaforge/etc/profile.d/conda.sh
 
 # Step 6 分类参数
 classification:
@@ -65,4 +74,5 @@ classification:
 #程序路径 (自动检测，通常不需要修改)
 programs:
   simulation_dir: null                 # simulation 脚本目录，null 表示自动检测
-  label_dir: null                      # label 脚本目录，null 表示自动检测
+  label_dir: null                      # label 脚本目录，null 表示自动检测 (simulation_dir/label)
+  temp3_dir: null                      # TEMP3 目录，null 表示自动检测 (simulation_dir/../TEMP3)

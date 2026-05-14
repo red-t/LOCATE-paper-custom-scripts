@@ -3,6 +3,7 @@
 
 species: dm6
 mode: 1
+share_pgdf: true
 
 # 输出目录
 output_dir: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/v4
@@ -13,6 +14,9 @@ reference:
   transposon: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_clean.transposon.fa
   repeat_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.repeat.bed
   gap_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.gap.bed
+  blacklist: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.BlackList.bed
+  soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/soma_v4/Dedup/dm6_S_1V30
+  germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/germ_v4/Dedup/dm6_G_1V1
 
 # 模拟参数
 simulation:
@@ -50,10 +54,20 @@ slurm:
   array_limit: 10
 
 # Conda 环境
-conda_env: simulation
-conda_path: /zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+conda_envs:
+  default: simulation
+  step0: simulation
+  step2: simulation
+  step4: TEMP3
+  step5: TEMP3
+conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
+
+# Step 6 分类参数
+classification:
+  somatic_freq: 0.01
 
 # 程序路径
 programs:
-  simulation_dir: /data/tusers/zhongrenhu/for_SMS/bin/simulation
-  label_dir: /data/tusers/zhongrenhu/for_SMS/bin/demo3/test_with_simulation
+  simulation_dir: null
+  label_dir: null
+  temp3_dir: null
