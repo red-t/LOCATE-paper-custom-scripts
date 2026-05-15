@@ -11,7 +11,7 @@ output_dir: /zata/zippy/boxu/for_hzr/Software/SimulationTest
 # 参考文件路径
 reference:
   template: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_template.fa
-  transposon: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_clean.transposon.fa
+  transposon: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/rice.transposon.fa
   repeat_bed: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.repeat.bed
   gap_bed: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.gap.bed
   blacklist: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6.BlackList.bed

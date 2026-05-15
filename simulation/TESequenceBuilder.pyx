@@ -74,11 +74,12 @@ cdef class SequenceContainer:
             str strand = ""
             TESequence teseq
 
-        # if strand is provided divide into 
-        m = re.search(r"([+-])", id)
-        if m is not None:
-            strand = m.group(1)
-            left, right = re.split("[+-]", id)
+        # if strand is provided divide into (only for $ expressions, not shortcut keys with hyphens in TE names)
+        if id.startswith("$"):
+            m = re.search(r"([+-])", id)
+            if m is not None:
+                strand = m.group(1)
+                left, right = re.split("[+-]", id)
         left = left.strip(" ") # make the hash access space secure
         
         # get the BASE sequence
