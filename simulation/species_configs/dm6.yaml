@@ -45,6 +45,7 @@ datasets:
 # SLURM 配置
 slurm:
   partition: 4hours
+  exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
   threads: 30
   mem_simulation: 10G
   mem_merge: 40G
@@ -65,6 +66,10 @@ conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 # Step 6 分类参数
 classification:
   somatic_freq: 0.01
+
+# Step 7: ML 训练 Pipeline
+ml_training:
+  enabled: true
 
 # 程序路径
 programs:

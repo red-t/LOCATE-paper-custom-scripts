@@ -38,7 +38,17 @@ LOCATE-paper-custom-scripts/
 │   ├── TEMP3/                     # 核心模块（Cython + C）
 │   └── setup.py
 └── model_training/                # AutoGluon 分类模型训练
-    └── training.py
+    ├── training.py                # 训练入口（支持 --drop-cols / --pos-label）
+    └── pipeline/                  # ML 训练 pipeline（Step 7）
+        ├── run_pipeline.py        # 独立编排脚本
+        ├── config.py              # YAML 配置解析
+        ├── defaults.py            # 列名常量与 mode 默认参数
+        ├── utils.py               # 工具函数
+        ├── evaluate.py            # 共享评估函数
+        ├── stage1_preprocess.py   # 数据预处理（merge / split / blacklist / dedup）
+        ├── stage2_shuffle.py      # 按比例采样 P/N 数据
+        ├── stage3_train.py        # 遍历比例训练 AutoGluon 模型
+        └── stage4_filter_eval.py  # 黑名单过滤 + 模型评估
 ```
 
 ## 环境配置
@@ -61,7 +71,7 @@ cd TEMP3/
 mamba create -n TEMP3 python=3.10
 mamba activate TEMP3
 mamba install -c conda-forge autogluon=1.0.0
-mamba install samtools=1.17 minimap2=2.26 pysam
+mamba install samtools=1.17 minimap2=2.26 pysam setuptools=69.5.1
 pip install cython==3.0.6
 python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
@@ -106,6 +116,15 @@ python run_simulation.py --config species_configs/dm6.yaml --step 5
 
 # Step 6: 分类 germline/somatic（本地运行）
 python run_simulation.py --config species_configs/dm6.yaml --step 6
+
+# Step 7: ML 模型训练（本地运行）
+python run_simulation.py --config species_configs/dm6.yaml --step 7
+
+# 或跳过前置步骤，只执行 Step 7:
+python run_simulation.py --config species_configs/dm6.yaml --start 7 --step 7
+
+# Step 7 也可以独立运行（不依赖于 run_simulation.py）:
+python model_training/pipeline/run_pipeline.py --config species_configs/dm6.yaml --mode all
 ```
 
 Dry-run 模式（仅显示命令，不执行）：
@@ -125,6 +144,7 @@ python run_simulation.py --config species_configs/dm6.yaml --step 0 --dry-run
 | 4 | minimap2 | 将 reads 比对到参考基因组 | SLURM | `scripts/minimap2_with_slurm.sh` |
 | 5 | label | 检测 TE insertion 并标注 TP/FP | SLURM | `scripts/label_with_slurm.sh` → TEMP3 + `label/Filter_TP_and_FP.py` |
 | 6 | classify | 分类 germline/somatic insertion | 本地 | `label/classify_germline_somatic.py` |
+| 7 | ml_training | ML 模型训练（AutoGluon） | 本地 | `model_training/pipeline/run_pipeline.py` |
 
 ### Step 0 — define_pgdf
 
@@ -158,6 +178,37 @@ python run_simulation.py --config species_configs/dm6.yaml --step 0 --dry-run
 
 根据 insertion 频率将 TP 分为 germline（高频）和 somatic（低频），输出 `TP_clt_G.txt` 和 `TP_clt_S.txt`。
 
+### Step 7 — ml_training
+
+使用 Step 5-6 输出的标注数据训练 AutoGluon 分类模型。通过 YAML 配置的 `ml_training` 段控制参数。
+
+流程：
+1. **preprocess** — 遍历 filelist 读取各样本的 `TP_clt_G.txt`/`TP_clt_S.txt`/`FP_clt.txt`，按 `cltType` 和 `teAlignedFrac` 过滤、插入 sample_id、合并
+2. **shuffle** — 按配置的 P/N 比例（如 ORG、1V1、1V30）对正负样本采样
+3. **train** — 对每个比例训练 AutoGluon TabularPredictor 模型
+4. **evaluate** — 用 BlackList 过滤测试数据、评估模型、输出 summary
+
+支持两种 mode：
+- **germline**（高频）：`cltType==0`、`teAlignedFrac>=0.8`、正类来源仅 `TP_clt_G.txt`
+- **somatic**（低频）：`cltType>0`、`teAlignedFrac>=1`、正类来源 `TP_clt_G.txt` + `TP_clt_S.txt`
+
+输出目录结构：
+```
+{output_dir}/For_ML/{species}/
+  germline/
+    Train/         train_P/N_{ratio}.txt
+    Test/          test_P/N_{protocol}_{ratio}.txt
+    BlackList*.bed
+    {species}_G_{ratio}/        # AutoGluon 模型目录
+    {species}_G_summary_Dedup.txt
+  somatic/
+    Train/
+    Test/
+    BlackList*.bed
+    {species}_S_1V30/
+    {species}_S_summary_Dedup.txt
+```
+
 ## 输出文件
 
 每个数据集的主要输出结构：
@@ -177,6 +228,56 @@ python run_simulation.py --config species_configs/dm6.yaml --step 0 --dry-run
     ├── TP_clt_S.txt                  # Somatic TP
     └── FP_clt.txt                    # 假阳性
 ```
+
+### 输出文件字段说明
+
+```
+Column  Value               Description
+
+1       chrom               chromosome
+2       refStart            cluster start on reference sequence (0-based, included)
+3       refEnd              cluster end on reference sequence (0-based, not-included)
+4       cltID               cluster ID
+5       numSeg              number of segments in the cluster (normalized by bg depth)
+6       strand              cluster orientation
+7       startIndex          start index in segments array (0-based, include)
+8       endIndex            end index in segments array (0-based, not-include)
+9       numSeg              number of segments in the cluster (normalized by bg depth)
+10      directionFlag       bitwise flag representing cluster direction
+                                1: forward
+                                2: reverse
+                                other: unkown
+11      cltType             cluster type
+                                0: germline (multiple support reads)
+                                1: somatic (1 support read & 1 alignment)
+                                2: somatic (1 support read & 2 alignments)
+12      locationType        bitwise flag representing cluster location
+                                1: inside normal region
+                                2: at repeat/gap boundary
+                                4: inside repeat/gap
+13      numSegType          number of different segment types
+14      entropy             entropy based on fraction of different type segments
+15      balanceRatio        balance ratio based on number of left- & right-clip segments
+16      lowMapQualFrac      fraction of segments with low mapQual (<5)
+17      dualClipFrac        fraction of "dual-clip" alignments
+18      alnFrac1            fraction of segments with alnLocationType=1
+19      alnFrac2            fraction of segments with alnLocationType=2
+20      alnFrac4            fraction of segments with alnLocationType=4
+21      alnFrac8            fraction of segments with alnLocationType=8
+22      alnFrac16           fraction of segments with alnLocationType=16
+23      meanMapQual         mean mapQual of cluster
+24      meanAlnScore        mean per-base alignment score (based on teAlignments)
+25      meanQueryMapFrac    mean query mapped fraction (based on teAlignments)
+26      meanDivergence      mean per-base divergence ((#mismatches + #I + #D) / (#mismatches + #I + #D + #matches))
+27      bgDiv               background divergence (for normalization)
+28      bgDepth             background depth (for normalization)
+29      bgReadLen           background read length
+30      teAlignedFrac       fraction of TE-aligned segments
+31      teTid               majority TE-tid of cluster
+32      isInBlacklist       whether cluster intersects with blacklist
+33      probability         the probability of the cluster to be a positive insertion
+```
+
 
 ## 配置文件说明
 

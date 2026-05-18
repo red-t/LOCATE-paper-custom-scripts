@@ -11,12 +11,18 @@ echo "SLURM_ARRAY_JOB_ID: " $SLURM_ARRAY_JOB_ID
 date
 echo ""
 
+# Track overall start time
+SCRIPT_START=$(date +%s)
+
 ################################
 ### Parameter initialization ###
 ################################
 [ -z $FILELIST ] && echo "ERROR: FILELIST not set" && exit 1
 [ -z $CONDA_PATH ] && CONDA_PATH=/zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 [ -z $CONDA_ENV ] && CONDA_ENV=simulation
+
+# Python unbuffered output for real-time log visibility
+export PYTHONUNBUFFERED=1
 
 # Default parameters
 [ -z $NGS_LEN ] && NGS_LEN=150
@@ -28,7 +34,7 @@ echo ""
 
 # Program path (auto-detect or use SIMULATION_DIR)
 if [ -z $SIMULATION_DIR ]; then
-    SIMULATION_DIR="/home/zhongrenhu/Software/LOCATE-paper-custom-scripts/simulation"
+    SIMULATION_DIR="/zata/zippy/boxu/for_hzr/Software/LOCATE-paper-custom-scripts/simulation"
 fi
 
 ### Get parameters from FILELIST ###
@@ -87,11 +93,19 @@ N_SUB=`awk -v sub_pop=$SUB_POP_SIZE -v pop=$POP_SIZE 'BEGIN{n_sub=int(pop/sub_po
 NGS_READS=`awk -v depth=$DEPTH -v g_l=$GENOME_SIZE -v c_l=$CONTIG_SIZE -v n_sub=$N_SUB -v r_l=150 -v inner=$NGS_INNER 'BEGIN{ratio=c_l/g_l; ngs_reads=int(ratio*(depth*g_l/(2*r_l+inner))/n_sub); print ngs_reads}'`
 TGS_READS=`awk -v depth=$DEPTH -v g_l=$GENOME_SIZE -v c_l=$CONTIG_SIZE -v n_sub=$N_SUB -v r_l=$TGS_MEANL 'BEGIN{ratio=c_l/g_l; tgs_reads=int(ratio*(depth*g_l/r_l)/n_sub); print tgs_reads}'`
 
+echo "Processing config: N_SUB=$N_SUB TGS_READS=$TGS_READS PROTOCOL=$PROTOCOL"
+date
+
 if [ -f $CONTIG.0.pgd ]; then
     for((j=0; j<$N_SUB; j++))
     do
+        ITER_START=$(date +%s)
+        echo ""
+        echo "=========================================="
+        echo "[ $(date) ] Iteration $j / $((N_SUB-1)) — Build sub population genome of $CONTIG"
+        echo "=========================================="
+
         # build population genome
-        echo -e "[ Build ${j}th sub population genome of $CONTIG ]"
         if [ ! -f $CONTIG.$j.fa ]; then
             python $SIMULATION_DIR/build-population-genome.py \
                 --pgd $CONTIG.$j.pgd \
@@ -104,7 +118,7 @@ if [ -f $CONTIG.0.pgd ]; then
         fi
 
         # generate TGS
-        echo -e "[ Generate TGS data from ${j}th sub population genome of $CONTIG ]"
+        echo "[ $(date) ] Iteration $j — Generate TGS data ($PROTOCOL, $TGS_READS reads per haploid)"
         if [ ! -f $CONTIG.${j}_tgs.fasta ]; then
             python $SIMULATION_DIR/generate_TGS.py \
                 --pg $CONTIG.$j.fa \
@@ -117,7 +131,12 @@ if [ -f $CONTIG.0.pgd ]; then
 
         # remove intermediate sub-population genome
         rm $CONTIG.$j.fa
+
+        ITER_END=$(date +%s)
+        echo "[ $(date) ] Iteration $j done (took $((ITER_END - ITER_START)) seconds)"
     done
+else
+    echo "WARNING: $CONTIG.0.pgd not found — skipping all processing"
 fi
 
 cd ..
@@ -139,6 +158,8 @@ echo "Cleaning up..."
 cd /tmp
 echo "Deleting temp dir: " $TMPDIR
 rm -rd $TMPDIR
+SCRIPT_END=$(date +%s)
 echo ""
 echo "Script complete."
+echo "Total elapsed: $((SCRIPT_END - SCRIPT_START)) seconds"
 date

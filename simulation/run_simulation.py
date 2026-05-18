@@ -326,8 +326,11 @@ def step2_simulation(config, dry_run=False, **kwargs):
         f'-c {threads}',
         f'--array=1-{task_count}%{array_limit}',
         f'--output={log_dir}/simulation-log-%A-%a.out',
-        str(slurm_script)
     ]
+    exclude = slurm_config.get('exclude', '')
+    if exclude:
+        cmd.append(f'--exclude={exclude}')
+    cmd.append(str(slurm_script))
 
     # 设置环境变量
     env = os.environ.copy()
@@ -336,6 +339,7 @@ def step2_simulation(config, dry_run=False, **kwargs):
     env['CONDA_ENV'] = conda_env
     env['SIMULATION_DIR'] = simulation_dir
     env['SLURM_LOG_DIR'] = str(output_base / 'logs')
+    env['PYTHONUNBUFFERED'] = '1'  # Python 输出实时刷新到日志
 
     print(f"任务数: {task_count}")
     print(f"SLURM 命令:")
@@ -409,6 +413,9 @@ def step3_merge(config, dry_run=False, **kwargs):
         f'--array=1-{task_count}%{array_limit}',
         f'--output={log_dir}/merge-log-%A-%a.out',
     ]
+    exclude = slurm_config.get('exclude', '')
+    if exclude:
+        cmd.append(f'--exclude={exclude}')
     if dependency and not dry_run:
         cmd.append(f'--dependency=afterok:{dependency}')
     cmd.append(str(slurm_script))
@@ -484,6 +491,9 @@ def step4_minimap2(config, dry_run=False, **kwargs):
         f'--array=1-{task_count}%{array_limit}',
         f'--output={log_dir}/minimap2-log-%A-%a.out',
     ]
+    exclude = slurm_config.get('exclude', '')
+    if exclude:
+        cmd.append(f'--exclude={exclude}')
     if dependency and not dry_run:
         cmd.append(f'--dependency=afterok:{dependency}')
     cmd.append(str(slurm_script))
@@ -570,6 +580,9 @@ def step5_label(config, dry_run=False, **kwargs):
         f'--array=1-{task_count}%{array_limit}',
         f'--output={log_dir}/label-log-%A-%a.out',
     ]
+    exclude = slurm_config.get('exclude', '')
+    if exclude:
+        cmd.append(f'--exclude={exclude}')
     if dependency and not dry_run:
         cmd.append(f'--dependency=afterok:{dependency}')
     cmd.append(str(slurm_script))
@@ -654,15 +667,94 @@ def step6_classify(config, dry_run=False, **kwargs):
     print("\nStep 6 完成!")
 
 
+def step7_ml_training(config, dry_run=False, **kwargs):
+    """
+    Step 7: ML 模型训练
+
+    使用 Step 6 输出的标注数据（TP_clt_G.txt, TP_clt_S.txt, FP_clt.txt）
+    训练 AutoGluon 分类模型（germline 和/或 somatic）。
+
+    配置参数来自 config 中的 ml_training 段。
+    调用 model_training/pipeline/run_pipeline.py 执行。
+    """
+    print("=" * 60)
+    print("Step 7: ML 模型训练")
+    print("=" * 60)
+
+    ml_config = config.get('ml_training', {})
+    if not ml_config.get('enabled', True):
+        print("ML training 已禁用 (ml_training.enabled = false)，跳过")
+        return
+
+    script_dir = get_script_dir()
+    pipeline_script = script_dir.parent / 'model_training' / 'pipeline' / 'run_pipeline.py'
+
+    if not pipeline_script.exists():
+        print(f"ERROR: pipeline 脚本不存在: {pipeline_script}")
+        return
+
+    # 确定 mode
+    modes = ml_config.get('modes', {})
+    has_germline = modes.get('germline', {}).get('enabled', True)
+    has_somatic = modes.get('somatic', {}).get('enabled', True)
+
+    if has_germline and has_somatic:
+        mode_arg = 'all'
+    elif has_germline:
+        mode_arg = 'germline'
+    elif has_somatic:
+        mode_arg = 'somatic'
+    else:
+        print("WARNING: 没有启用的 mode")
+        return
+
+    # 设置 conda 环境 —— 使用目标环境的 Python 解释器完整路径
+    conda_path = config.get('conda_path', '/zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh')
+    conda_env = get_conda_env(config, 'step7', 'TEMP3')
+
+    # 从 conda.sh 路径推导目标环境的 Python 解释器路径
+    #   conda.sh -> <conda_root>/etc/profile.d/conda.sh
+    #   python    -> <conda_root>/envs/<env>/bin/python
+    conda_root = Path(conda_path).parent.parent.parent
+    python_exe = str(conda_root / 'envs' / conda_env / 'bin' / 'python')
+
+    cmd = [
+        python_exe, str(pipeline_script),
+        '--config', str(config['_config_path']),
+        '--mode', mode_arg,
+    ]
+
+    ml_stage = kwargs.get('ml_stage')
+    if ml_stage:
+        cmd += ['--stage', ml_stage]
+
+    print(f"执行命令:")
+    print(f"  {' '.join(cmd)}")
+
+    if dry_run:
+        print("\n[dry-run] 未执行 ML 训练")
+        return
+
+    # 设置 PATH 使子进程能找到目标环境中的工具（如 bedtools）
+    env = os.environ.copy()
+    env_bin = str(conda_root / 'envs' / conda_env / 'bin')
+    env['PATH'] = f"{env_bin}:{env.get('PATH', '')}"
+
+    subprocess.run(cmd, check=True, env=env)
+    print("\nStep 7 完成!")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Simulation Pipeline 主控脚本')
     parser.add_argument('--config', required=True, help='配置文件路径 (YAML)')
     parser.add_argument('--step', type=int, default=None,
-                        help='执行到哪一步 (0-6)。不指定则显示所有步骤信息。配合 --start 可以只执行中间某几步')
+                        help='执行到哪一步 (0-7)。不指定则显示所有步骤信息。配合 --start 可以只执行中间某几步')
     parser.add_argument('--start', type=int, default=0,
                         help='从哪一步开始执行 (默认 0)')
     parser.add_argument('--dry-run', action='store_true',
                         help='只显示命令，不实际执行')
+    parser.add_argument('--ml-stage', default=None,
+                        help='Step 7 的 ML pipeline stage 范围 (e.g., "1", "1-3", "1,3")。不指定则跑全部 stage')
 
     args = parser.parse_args()
 
@@ -682,6 +774,7 @@ def main():
         ("Step 4", "minimap2 比对 (SLURM)", step4_minimap2),
         ("Step 5", "标注 TP/FP (SLURM)", step5_label),
         ("Step 6", "分类 germline/somatic", step6_classify),
+        ("Step 7", "ML 模型训练", step7_ml_training),
     ]
 
     if args.step is None:
@@ -689,12 +782,12 @@ def main():
         for i, (name, desc, _) in enumerate(steps):
             print(f"  {i}: {desc}")
         print()
-        print("用法: python run_simulation.py --config <config.yaml> --step <0-6>")
+        print("用法: python run_simulation.py --config <config.yaml> --step <0-7>")
         print("      python run_simulation.py --config <config.yaml> --dry-run")
         return
 
-    if args.step < 0 or args.step > 6:
-        print(f"ERROR: step 必须在 0-6 之间")
+    if args.step < 0 or args.step > 7:
+        print(f"ERROR: step 必须在 0-7 之间")
         return
 
     if args.start > args.step:
@@ -707,6 +800,8 @@ def main():
         name, desc, func = steps[i]
 
         kwargs = {'dry_run': args.dry_run}
+        if i == 7 and args.ml_stage:
+            kwargs['ml_stage'] = args.ml_stage
         if i in (3, 4, 5) and last_job_id:
             kwargs['dependency'] = last_job_id
         elif i == 6 and last_job_id:

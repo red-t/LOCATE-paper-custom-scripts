@@ -1,27 +1,27 @@
 # 水稻 (Oryza sativa) 配置模板
 # 请根据实际情况修改路径和参数
 
-species: rice
+species: IRGSPv1
 mode: 1
 share_pgdf: false
 
-# 输出目录 - 请修改为实际路径
-output_dir: /path/to/rice/simulation/output
+# 输出目录
+output_dir: /zata/zippy/boxu/for_hzr/Simulation
 
-# 参考文件路径 - 请修改为实际路径
+# 参考文件路径
 reference:
-  template: /path/to/rice_template.fa           # 参考基因组模板 (需要 .fai 索引)
-  transposon: /path/to/rice_transposon.fa       # TE consensus 序列 (需要 .fai 索引)
-  repeat_bed: /path/to/rice_repeat.bed          # RepeatMasker 注释
-  gap_bed: /path/to/rice_gap.bed                # Gap 区域注释
-  blacklist: /path/to/rice_blacklist.bed        # 黑名单区域注释
-  soma_model: /path/to/rice_S_1V30              # Soma 模型
-  germ_model: /path/to/rice_G_1V1               # Germline 模
+  template: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.fa
+  transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.transposon.fa
+  repeat_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.repeat.bed
+  gap_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.gap.bed
+  blacklist: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.BlackList.bed
+  soma_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_S_1V30
+  germ_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_G_1V1
 
 # 模拟参数 - 根据水稻特性调整
 simulation:
   population_size: 100                # 群体基因组大小
-  sub_population_size: 5              # 子群体大小
+  sub_population_size: 10             # 子群体大小
   germline_count: 1000                # Germline insertion 数量
   avg_somatic_count: 50               # 平均 somatic insertion 数量
   min_distance: 9000                  # 最小距离 (根据水稻基因组大小调整)
@@ -36,20 +36,21 @@ sequencing:
 
 # 数据集配置
 datasets:
-  50: 20
-  40: 20
-  30: 20
-  20: 20
-  10: 20
+  50: 10
+  40: 10
+  30: 10
+  20: 10
+  10: 10
 
 # SLURM 配置 - 根据集群调整
 slurm:
-  partition: gpu
+  partition: 4hours
+  exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
   threads: 24
   mem_simulation: 20G
   mem_merge: 20G
-  mem_minimap2: 20G
-  mem_label: 20G
+  mem_minimap2: 30G
+  mem_label: 30G
   time: "4:00:00"
   array_limit: 10
 
@@ -60,11 +61,16 @@ conda_envs:
   step2: simulation
   step4: TEMP3
   step5: TEMP3
+  step7: TEMP3
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 
 # Step 6 分类参数
 classification:
   somatic_freq: 0.01
+
+# Step 7: ML 训练 Pipeline（使用模板默认值）
+ml_training:
+  enabled: true
 
 # 程序路径
 programs:

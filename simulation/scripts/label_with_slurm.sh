@@ -15,7 +15,7 @@ echo ""
 ### Parameter initialization ###
 ################################
 [ -z $FILELIST ] && echo "ERROR: FILELIST not set" && exit 1
-[ -z $CONDA_PATH ] && CONDA_PATH=/zata/zippy/zhongrenhu/Software/mambaforge/etc/profile.d/conda.sh
+[ -z $CONDA_PATH ] && CONDA_PATH=/zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 [ -z $CONDA_ENV ] && CONDA_ENV=TEMP3
 
 # Default parameters
