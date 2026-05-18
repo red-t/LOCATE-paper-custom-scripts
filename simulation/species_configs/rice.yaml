@@ -68,9 +68,53 @@ conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 classification:
   somatic_freq: 0.01
 
-# Step 7: ML 训练 Pipeline（使用模板默认值）
+# Step 7: ML 训练 Pipeline 配置
 ml_training:
-  enabled: true
+  enabled: true                             # 是否启用 Step 7
+  output_dir: null                          # null = 自动: {output_dir}/For_ML/{species}/
+  test_frac: 0.1                            # 测试集比例（从各 depth/protocol 均匀抽取，默认 0.1）
+  random_seed: 42                           # 随机种子（保证可复现，默认 42）
+
+  # Blacklist 参数
+  blacklist:
+    min_sample_overlap: 10                  # 一个 Negative case 至少被多少个样本共享才列入黑名单（默认 10）
+    max_length: 50                          # 一个黑名单区域的最大长度（默认 50）
+
+  # Mode 定义（germline 高频 / somatic 低频）
+  modes:
+    germline:
+      enabled: true
+      positive_sources: [TP_clt_G.txt]      # 正类来源文件
+      positive_filter:
+        cltType_expr: "==0"                 # cltType == 0 为 germline
+        score_threshold: 0.8                # teAlignedFrac >= 0.8
+      pos_label: 1                          # 正类标签值
+      dedup_blacklist: BlackList_G.bed      # 去重用的黑名单
+      drop_columns: [chrom, refStart, refEnd, cid, strand, sample_id,
+        startIndex, endIndex, numSeg2, directionFlag, cltType,
+        teAlignedFrac, teTid, isInBlacklist, probability]         # 训练时丢弃的列（保留 numSeg）
+      train_ratios:                         # 训练正负比例
+        - name: ORG                         # ORG = 全量数据
+      test_ratios:
+        - name: ORG
+      negative_sampling: without_replacement  # 负样本不带放回抽样
+
+    somatic:
+      enabled: true
+      positive_sources: [TP_clt_G.txt, TP_clt_S.txt]  # 正类来源（G+S 合并）
+      positive_filter:
+        cltType_expr: ">0"                 # cltType > 0 为 somatic
+        score_threshold: 1                  # teAlignedFrac >= 1
+      pos_label: 2                          # 正类标签值
+      dedup_blacklist: BlackList_S.bed      # 去重用的黑名单
+      drop_columns: [chrom, refStart, refEnd, cid, strand, sample_id,
+        startIndex, endIndex, numSeg, numSeg2, directionFlag,
+        bgDepth, teAlignedFrac, teTid, isInBlacklist, probability] # 额外丢弃 numSeg 和 bgDepth
+      train_ratios:
+        - name: 1V20
+      test_ratios:
+        - name: 1V20
+      negative_sampling: with_replacement   # 负样本带放回抽样（数据有限）
 
 # 程序路径
 programs:

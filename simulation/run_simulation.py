@@ -10,6 +10,7 @@ Simulation Pipeline 主控脚本
 5. Step 4: minimap2 比对 (SLURM)
 6. Step 5: 标注 TP/FP (SLURM)
 7. Step 6: 分类 germline/somatic
+8. Step 7: ML 模型训练
 
 用法:
     python run_simulation.py --config species_configs/dm6.yaml --step 0-6
