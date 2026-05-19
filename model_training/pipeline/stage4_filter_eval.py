@@ -119,14 +119,14 @@ def run(config, mode_config, work_dir):
                     p_filt = None
 
                 # Load data
-                df_test = load_data(p_unfilt, n_unfilt)
+                df_test = load_data(p_unfilt, n_unfilt, pos_label=mode_config.pos_label)
                 if df_test.empty:
                     continue
 
                 # Load filtered data (if any) — mark as class 0 (caught by blacklist)
                 df_filtered = pd.DataFrame()
                 if p_filt and p_filt.exists() and p_filt.stat().st_size > 0:
-                    df_filtered = load_data(p_filt, n_filt)
+                    df_filtered = load_data(p_filt, n_filt, pos_label=mode_config.pos_label)
                     if not df_filtered.empty:
                         df_filtered['class'] = 0
                         df_filtered['filtered'] = 1

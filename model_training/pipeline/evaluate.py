@@ -12,7 +12,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from .defaults import COLUMN_NAMES, CATEGORICAL_COLUMNS
 
 
-def load_data(positive_fn, negative_fn):
+def load_data(positive_fn, negative_fn, pos_label=1):
     """Load test data from positive and negative files.
 
     Handles missing/empty files gracefully (returns empty DataFrame).
@@ -22,7 +22,7 @@ def load_data(positive_fn, negative_fn):
         tp_data = pd.read_table(positive_fn, header=None)
         if len(tp_data) > 0:
             tp_data.columns = COLUMN_NAMES
-            tp_data['class'] = 1
+            tp_data['class'] = pos_label
             np_check = True
         else:
             tp_data = pd.DataFrame()
