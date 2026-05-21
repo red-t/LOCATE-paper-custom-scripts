@@ -1,0 +1,79 @@
+# human (GRCh38) 训练数据配置
+# 模拟参数参考 GRCh38/README.md 和 v4 生产配置
+
+species: human
+mode: 1
+share_pgdf: false
+
+# 输出目录
+output_dir: /zata/zippy/boxu/for_hzr/Simulation
+
+# 参考文件路径
+reference:
+  template: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.fa
+  transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.transposon.fa
+  repeat_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.repeat.bed
+  gap_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.gap.bed
+  blacklist: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.BlackList.bed
+  soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/GRCh38/For_ML/soma_v4/Dedup/GRCh38_S_1V30
+  germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/GRCh38/For_ML/germ_v4/Dedup/GRCh38_G_1V1
+
+# 模拟参数
+simulation:
+  population_size: 100
+  sub_population_size: 5
+  germline_count: 3000
+  avg_somatic_count: 500
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.1
+  nest_prob: 0.1
+
+# 测序参数
+sequencing:
+  depths: [10, 20, 30, 40, 50]
+  protocols: [ccs, clr, ont]
+
+# 数据集配置（每 depth 10 个 × 3 protocols = 150 总数据集）
+datasets:
+  50: 10
+  40: 10
+  30: 10
+  20: 10
+  10: 10
+
+# SLURM 配置（人类基因组较大，需要更长时间和更多内存）
+slurm:
+  partition: 5days
+  exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
+  threads: 24
+  mem_simulation: 20G
+  mem_merge: 20G
+  mem_minimap2: 50G
+  mem_label: 50G
+  time: "12:00:00"
+  array_limit: 10
+
+# Conda 环境
+conda_envs:
+  default: simulation
+  step0: simulation
+  step2: simulation
+  step4: TEMP3
+  step5: TEMP3
+  step7: TEMP3
+conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
+
+# Step 6 分类参数
+classification:
+  somatic_freq: 0.01
+
+# Step 7: ML 训练 Pipeline
+ml_training:
+  enabled: true
+
+# 程序路径
+programs:
+  simulation_dir: null
+  label_dir: null
+  temp3_dir: null
