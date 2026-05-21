@@ -45,7 +45,12 @@ echo ""
 echo "Copying input files from ${SAMPLE}..."
 for contig in ${CONTIGS[*]}
 do
-    mkdir ${contig} && cp ${SAMPLE}/${contig}/TGS.fasta ${contig}
+    mkdir ${contig}
+    if [ -f ${SAMPLE}/${contig}/TGS.fastq ]; then
+        cp ${SAMPLE}/${contig}/TGS.fastq ${contig}
+    elif [ -f ${SAMPLE}/${contig}/TGS.fasta ]; then
+        cp ${SAMPLE}/${contig}/TGS.fasta ${contig}
+    fi
 done
 echo "Done."
 echo ""
@@ -54,7 +59,13 @@ echo ""
 ### Process ###
 ###############
 echo "Merging..."
-cat */TGS.fasta >> TGS.fasta
+if ls */TGS.fastq 1>/dev/null 2>&1; then
+    cat */TGS.fastq > TGS.fastq
+    echo "Compressing TGS.fastq..."
+    gzip TGS.fastq
+elif ls */TGS.fasta 1>/dev/null 2>&1; then
+    cat */TGS.fasta > TGS.fasta
+fi
 echo "Done." && echo ""
 
 #################################
@@ -62,7 +73,7 @@ echo "Done." && echo ""
 ################################
 echo "Copying results to destination..."
 ls -lh
-cp TGS.fasta $SAMPLE
+cp TGS.fastq.gz TGS.fasta $SAMPLE 2>/dev/null
 echo "Done."
 echo ""
 

@@ -3,20 +3,20 @@
 
 species: dm6
 mode: 1
-share_pgdf: true
+share_pgdf: false
 
 # 输出目录
-output_dir: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/v4
+output_dir: /zata/zippy/boxu/for_hzr/Simulation
 
 # 参考文件路径
 reference:
-  template: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_template.fa
-  transposon: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6_clean.transposon.fa
-  repeat_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.repeat.bed
-  gap_bed: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.gap.bed
-  blacklist: /data/tusers/zhongrenhu/for_SMS/reference/dm6/train/dm6.BlackList.bed
-  soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/soma_v4/Dedup/dm6_S_1V30
-  germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/dm6/For_ML/germ_v4/Dedup/dm6_G_1V1
+  template: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6_template.fa
+  transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6_clean.transposon.fa
+  repeat_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6.repeat.bed
+  gap_bed: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6.gap.bed
+  blacklist: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6.BlackList.bed
+  soma_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_S_1V30
+  germ_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_G_1V1
 
 # 模拟参数
 simulation:
@@ -47,9 +47,9 @@ slurm:
   partition: 4hours
   exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
   threads: 30
-  mem_simulation: 10G
-  mem_merge: 40G
-  mem_minimap2: 60G
+  mem_simulation: 20G
+  mem_merge: 20G
+  mem_minimap2: 30G
   mem_label: 30G
   time: "4:00:00"
   array_limit: 10
@@ -61,6 +61,7 @@ conda_envs:
   step2: simulation
   step4: TEMP3
   step5: TEMP3
+  step7: TEMP3
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 
 # Step 6 分类参数

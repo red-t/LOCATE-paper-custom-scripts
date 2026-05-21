@@ -3,9 +3,13 @@ import pysam
 cpdef str rc(str seq):
     cdef:
         dict complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N':'N',
-                           'a': 'T', 'c': 'G', 'g': 'C', 't': 'A', 'n':'N',}
+                           'R': 'Y', 'Y': 'R', 'S': 'S', 'W': 'W', 'M': 'K', 'K': 'M',
+                           'B': 'V', 'D': 'H', 'H': 'D', 'V': 'B',
+                           'a': 'T', 'c': 'G', 'g': 'C', 't': 'A', 'n':'N',
+                           'r': 'Y', 'y': 'R', 's': 'S', 'w': 'W', 'm': 'K', 'k': 'M',
+                           'b': 'V', 'd': 'H', 'h': 'D', 'v': 'B',}
         str base, ret
-    
+
     ret = ''.join([complement[base] for base in seq[::-1]])
     return ret
 

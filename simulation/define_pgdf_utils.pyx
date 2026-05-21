@@ -87,10 +87,7 @@ cpdef tuple defineIns(int insOrder, dict teDict, int numTe, str insType, object 
         ### Define Truncations ###
         if args.species == "human":
             truncateId, truncateExpress, truncateLen = defineTruncateTest(teOrder, teLen)
-        elif args.species == "fly":
-            truncateId, truncateExpress, truncateLen = defineTruncateTrain(args.truncProb, teLen)
         else:
-            # 新物种使用通用 truncation 逻辑
             truncateId, truncateExpress, truncateLen = defineTruncateTrain(args.truncProb, teLen)
 
     ### Choose TSD ###
@@ -119,27 +116,21 @@ cpdef tuple defineIns(int insOrder, dict teDict, int numTe, str insType, object 
 #
 #
 cdef int getTeOrderTrain(str insType, int numTe, str species):
-    # 新物种使用通用逻辑：从所有 TE 中均匀随机选择
-    if species not in ("human", "fly"):
-        return random.randint(1, numTe)
-
-    if insType == "g":
-        return random.randint(1, numTe)
-    if species == "human":
-        # Alu、HERVK、LINE1、SVA
-        return random.choice([1, 2, 3, 4])
-    # fly: 3S18、Max_element、blood、HMS_Beagle、I_element、P_element
-    return random.choice([15, 44, 54, 72, 100, 106])
+    # 从所有 TE 中均匀随机选择
+    return random.randint(1, numTe)
 #
 #
 #
 cdef int getTeOrderTest(int numTe, str species):
     if species == "human":
-        # Alu、HERVK、LINE1、SVA
+        # Alu(1)、HERVK(2)、LINE1(3)、SVA(4)
         return random.choices([1, 2, 3, 4], [0.83, 0.01, 0.12, 0.04], k=1)[0]
     elif species == "fly":
-        # 3S18、Max_element、blood、HMS_Beagle、I_element、P_element
-        return random.choices([15, 44, 54, 72, 100, 106], [0.06, 0.14, 0.07, 0.07, 0.08, 0.58], k=1)[0]
+        # 3S18(34)、Max_element(103)、blood(6)、HMS_Beagle(15)、I_element(17)、P_element(24)
+        return random.choices([34, 103, 6, 15, 17, 24], [0.06, 0.14, 0.07, 0.07, 0.08, 0.58], k=1)[0]
+    elif species == "rice":
+        # STOWAWAY41_OS(1)、TOURIST-XV(2)、MU_OS(3)、HELITRON4_OS(4)、DS-RICE4N(5)、Gypsy-107_OS(6)
+        return random.choices([1, 2, 3, 4, 5, 6], [0.35, 0.25, 0.15, 0.10, 0.08, 0.07], k=1)[0]
     else:
         # 新物种：均匀随机选择
         return random.randint(1, numTe)
@@ -267,12 +258,8 @@ cpdef defineBody(dict insIdToExpressDict, str chrom, int minDist, int maxDist, s
 
         ### Set Insertion Frequency ###
         if insOrder in germOrderSet:
-            if args.species == "human":
-                frequency = random.random()
-                if frequency < 0.1:
-                    frequency = random.uniform(0.1, 1)
-                else:
-                    frequency = random.choice((0.5, 1))
+            if args.species in {"human", "rice"}:
+                frequency = random.choice((0.5, 1))
             elif args.species == "fly":
                 frequency = random.uniform(0.1, 1)
             else:

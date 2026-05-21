@@ -22,7 +22,9 @@ cdef class TGS_Mutator:
             self.__delf = 0.9
             pass
 
-        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N']}
+        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N'],
+                     'R':['R'], 'Y':['Y'], 'S':['S'], 'W':['W'], 'M':['M'], 'K':['K'],
+                     'B':['B'], 'D':['D'], 'H':['H'], 'V':['V']}
         self.__ins = ['A','T','C','G']
 
     cdef str mutateseq(self, str seq):
@@ -73,7 +75,9 @@ cdef class TGS_Mutator:
 cdef class NGS_Mutator:
     def __init__(self, float errorrate):
         self.__er = errorrate
-        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N']}
+        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N'],
+                     'R':['R'], 'Y':['Y'], 'S':['S'], 'W':['W'], 'M':['M'], 'K':['K'],
+                     'B':['B'], 'D':['D'], 'H':['H'], 'V':['V']}
 
     cdef int __getPoisson(self, float lam):
         cdef:
@@ -112,8 +116,10 @@ cdef class NGS_Mutator:
 cdef class ExhaustiveSeqMutator:
     def __init__(self, float errorrate):
         self.__er = errorrate
-        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N']}
-    
+        self.__tr = {'A':['T','C','G'], 'T':['A','C','G'], 'C':['A','T','G'], 'G':['A','T','C'], 'N':['N'],
+                     'R':['R'], 'Y':['Y'], 'S':['S'], 'W':['W'], 'M':['M'], 'K':['K'],
+                     'B':['B'], 'D':['D'], 'H':['H'], 'V':['V']}
+
     cdef str mutateseq(self, str seq):
         if(self.__er < 0.0000000001):
             return seq

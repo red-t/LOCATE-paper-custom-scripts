@@ -31,6 +31,8 @@ export PYTHONUNBUFFERED=1
 [ -z $NGS_ERR ] && NGS_ERR=0.0005
 [ -z $TGS_MAXL ] && TGS_MAXL=300000
 [ -z $TGS_MINL ] && TGS_MINL=100
+[ -z $SIMULATOR ] && SIMULATOR=builtin
+[ -z $PBSIM_MODEL ] && PBSIM_MODEL=""
 
 # Program path (auto-detect or use SIMULATION_DIR)
 if [ -z $SIMULATION_DIR ]; then
@@ -118,15 +120,35 @@ if [ -f $CONTIG.0.pgd ]; then
         fi
 
         # generate TGS
-        echo "[ $(date) ] Iteration $j — Generate TGS data ($PROTOCOL, $TGS_READS reads per haploid)"
-        if [ ! -f $CONTIG.${j}_tgs.fasta ]; then
-            python $SIMULATION_DIR/generate_TGS.py \
-                --pg $CONTIG.$j.fa \
-                --reads $TGS_READS \
-                --fasta $CONTIG.${j}_tgs.fasta \
-                --tgs-maxl $TGS_MAXL \
-                --tgs-minl $TGS_MINL \
-                --protocol $PROTOCOL
+        echo "[ $(date) ] Iteration $j — Generate TGS data ($PROTOCOL, simulator=$SIMULATOR)"
+        if [ "$SIMULATOR" == "pbsim" ]; then
+            if [ ! -f $CONTIG.${j}_tgs.fastq ]; then
+                if [ -z "$PBSIM_MODEL" ]; then
+                    echo "ERROR: SIMULATOR=pbsim but PBSIM_MODEL not set" && exit 1
+                fi
+                PBSIM_DEPTH=$(awk -v depth=$DEPTH -v pop=$POP_SIZE 'BEGIN{printf "%.2f", depth / pop}')
+                pbsim --strategy wgs \
+                      --method errhmm \
+                      --errhmm $PBSIM_MODEL \
+                      --genome $CONTIG.$j.fa \
+                      --depth $PBSIM_DEPTH \
+                      --prefix $CONTIG.${j}_tgs
+                # errhmm 输出 gzipped fq, 解压合并后重命名 read 避免多 contig/j 间冲突
+                zcat $CONTIG.${j}_tgs_*.fq.gz | \
+                    awk -v prefix="${CONTIG}_${j}_" 'NR%4==1{print "@" prefix substr($0,2); next} {print}' \
+                    > $CONTIG.${j}_tgs.fastq
+                rm -f $CONTIG.${j}_tgs_*.fq.gz $CONTIG.${j}_tgs_*.ref $CONTIG.${j}_tgs_*.maf
+            fi
+        else
+            if [ ! -f $CONTIG.${j}_tgs.fasta ]; then
+                python $SIMULATION_DIR/generate_TGS.py \
+                    --pg $CONTIG.$j.fa \
+                    --reads $TGS_READS \
+                    --fasta $CONTIG.${j}_tgs.fasta \
+                    --tgs-maxl $TGS_MAXL \
+                    --tgs-minl $TGS_MINL \
+                    --protocol $PROTOCOL
+            fi
         fi
 
         # remove intermediate sub-population genome
@@ -140,7 +162,11 @@ else
 fi
 
 cd ..
-[ -f $CONTIG/$CONTIG.0_tgs.fasta ] && cat */*_tgs.fasta > TGS.fasta
+if [ -f $CONTIG/$CONTIG.0_tgs.fastq ]; then
+    cat */*_tgs.fastq > TGS.fastq
+elif [ -f $CONTIG/$CONTIG.0_tgs.fasta ]; then
+    cat */*_tgs.fasta > TGS.fasta
+fi
 
 ################################
 ### Copy files to output dir ###

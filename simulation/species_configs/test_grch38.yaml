@@ -1,0 +1,58 @@
+# human (GRCh38) 测试数据配置
+# 使用 pbsim3 生成 ONT reads, mode=2 确保物种特异 TE 比例
+
+species: human
+mode: 2
+share_pgdf: true
+
+output_dir: /zata/zippy/boxu/for_hzr/Simulation/TestingDataset/GRCh38
+
+reference:
+  template: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.fa
+  transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.transposon.fa
+
+# simulation:
+#   simulator: pbsim
+#   pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/ERRHMM-ONT-HQ.model
+#   population_size: 2
+#   sub_population_size: 2
+#   germline_count: 2500
+#   avg_somatic_count: 0
+#   min_distance: 9000
+#   divergence_rate: 0
+#   trunc_prob: 0.7
+#   nest_prob: 0
+simulation:
+  population_size: 2
+  sub_population_size: 2
+  germline_count: 2500
+  avg_somatic_count: 0
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.7
+  nest_prob: 0
+
+# sequencing:
+#   depths: [50]
+#   protocols: [ont]
+sequencing:
+  depths: [50]
+  protocols: [ccs, clr]
+
+datasets:
+  50: 1
+
+slurm:
+  partition: 5days
+  exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
+  threads: 24
+  mem_simulation: 20G
+  mem_merge: 20G
+  time: "12:00:00"
+  array_limit: 12
+
+conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
+conda_envs:
+  default: simulation
+  step0: simulation
+  step2: simulation

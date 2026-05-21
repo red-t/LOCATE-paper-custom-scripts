@@ -342,6 +342,15 @@ def step2_simulation(config, dry_run=False, **kwargs):
     env['SLURM_LOG_DIR'] = str(output_base / 'logs')
     env['PYTHONUNBUFFERED'] = '1'  # Python 输出实时刷新到日志
 
+    # 模拟器选择（pbsim / builtin）
+    simulator = config.get('simulation', {}).get('simulator', 'builtin')
+    env['SIMULATOR'] = simulator
+
+    # pbsim3 errhmm 模型路径（仅 simulator=pbsim 时需要）
+    pbsim_model = config.get('simulation', {}).get('pbsim_model', '')
+    if pbsim_model:
+        env['PBSIM_MODEL'] = pbsim_model
+
     print(f"任务数: {task_count}")
     print(f"SLURM 命令:")
     print(f"  {' '.join(cmd)}")
@@ -350,6 +359,9 @@ def step2_simulation(config, dry_run=False, **kwargs):
     print(f"  CONDA_PATH={conda_path}")
     print(f"  CONDA_ENV={conda_env}")
     print(f"  SIMULATION_DIR={simulation_dir}")
+    print(f"  SIMULATOR={simulator}")
+    if pbsim_model:
+        print(f"  PBSIM_MODEL={pbsim_model}")
     print(f"  SLURM_LOG_DIR={output_base / 'logs'}")
 
     if dry_run:

@@ -144,13 +144,23 @@ def generate_label_filelist(config, output_dir):
     - ccs → map-hifi
     - clr → map-pb
     - ont → map-ont
+
+    如果配置文件缺少 repeat_bed 或 gap_bed，则跳过生成（用于仅跑 Step 0-3 的场景）
     """
     filelist_path = output_dir / 'label_filelist'
 
     output_base = Path(config['output_dir'])
-    repeat_bed = config['reference']['repeat_bed']
-    gap_bed = config['reference']['gap_bed']
-    ref_te = config['reference']['transposon']
+    ref = config.get('reference', {})
+    repeat_bed = ref.get('repeat_bed')
+    gap_bed = ref.get('gap_bed')
+    ref_te = ref.get('transposon')
+
+    if not repeat_bed or not gap_bed:
+        print("  WARNING: reference.repeat_bed 或 reference.gap_bed 未配置，跳过 label_filelist 生成")
+        # 创建空文件，避免下游步骤因文件缺失而报错
+        with open(filelist_path, 'w') as f:
+            pass
+        return filelist_path
 
     # preset 映射: 每个 protocol 使用对应 preset
     preset_map = {
