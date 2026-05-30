@@ -1,49 +1,17 @@
-## 1. Dependencies
+## 1. Installation
 
-### 1.1 Autogluon (1.0.0)
-
-```shell
-mamba create -n TEMP3 python=3.10
-mamba install -c conda-forge autogluon=1.0.0
+```
+mamba env create -f TEMP3.env.yaml
+python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
 
-### 1.2 Samtools (1.17)
-
-```shell
-mamba install samtools=1.17
-```
-
-### 1.3 Minimap2 (2.26)
-
-```shell
-mamba install minimap2=2.26
-```
-
-### 1.4 pysam
-
-```shell
-mamba install pysam
-```
-
-### 1.5 Cython (3.0.6)
-
-```shell
-pip install cython==3.0.6
-```
-
-## 2. Compile
-
-```shell
-python setup.py build_ext -i
-```
-
-## 3. Usage
+## 2. Usage
 
 ```shell
 python TEMP3.py -b BAM -r REPEAT.bed -g GAP.bed -B BlackList.bed -T TE.fa --germ GERM_MODEL --soma SOMA_MODEL -p NUM_PROCESS -t NUM_THREAD
 ```
 
-## 4. Output
+## 3. Output
 
 ___*clt.txt___ is the summary for non-reference insertions.
 

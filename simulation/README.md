@@ -53,14 +53,11 @@ LOCATE-paper-custom-scripts/
 
 ## 环境配置
 
-### 1. 创建 Simulation 环境
+### 1. 创建 simulation 环境
 
 ```shell
 cd simulation/
-mamba create -n simulation python=3.12
-mamba activate simulation
-mamba install VISOR bcftools samtools scipy pysam
-pip install cython pyyaml
+mamba env create -f simulation.env.yaml
 python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
 
@@ -68,11 +65,7 @@ python setup.py build_ext -i && rm -r build && rm -f *.c
 
 ```shell
 cd TEMP3/
-mamba create -n TEMP3 python=3.10
-mamba activate TEMP3
-mamba install -c conda-forge autogluon=1.0.0
-mamba install samtools=1.17 minimap2=2.26 pysam setuptools=69.5.1
-pip install cython==3.0.6
+mamba env create -f TEMP3.env.yaml
 python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
 
