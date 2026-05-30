@@ -51,6 +51,9 @@ do
     elif [ -f ${SAMPLE}/${contig}/TGS.fasta ]; then
         cp ${SAMPLE}/${contig}/TGS.fasta ${contig}
     fi
+    if [ -f ${SAMPLE}/${contig}/NGS_1.fastq ]; then
+        cp ${SAMPLE}/${contig}/NGS_1.fastq ${SAMPLE}/${contig}/NGS_2.fastq ${contig}/
+    fi
 done
 echo "Done."
 echo ""
@@ -62,9 +65,15 @@ echo "Merging..."
 if ls */TGS.fastq 1>/dev/null 2>&1; then
     cat */TGS.fastq > TGS.fastq
     echo "Compressing TGS.fastq..."
-    gzip TGS.fastq
+    gzip -1 TGS.fastq
 elif ls */TGS.fasta 1>/dev/null 2>&1; then
     cat */TGS.fasta > TGS.fasta
+fi
+if ls */NGS_1.fastq 1>/dev/null 2>&1; then
+    cat */NGS_1.fastq > NGS_1.fastq
+    cat */NGS_2.fastq > NGS_2.fastq
+    echo "Compressing NGS PE files..."
+    gzip -1 NGS_1.fastq NGS_2.fastq
 fi
 echo "Done." && echo ""
 
@@ -74,6 +83,7 @@ echo "Done." && echo ""
 echo "Copying results to destination..."
 ls -lh
 cp TGS.fastq.gz TGS.fasta $SAMPLE 2>/dev/null
+cp NGS_1.fastq.gz NGS_2.fastq.gz $SAMPLE 2>/dev/null
 echo "Done."
 echo ""
 

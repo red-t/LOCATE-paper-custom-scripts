@@ -31,8 +31,9 @@ simulation:
 
 #测序参数
 sequencing:
-  depths: [10, 20, 30, 40, 50]         #测序深度列表
+  depths: [10, 20, 30, 40, 50]         # 测序深度列表
   protocols: [ccs, clr, ont]           # 测序协议列表
+  generate_ngs: false                  # 是否生成 NGS 数据 (true/false)
   ngs_read_length: 150                 # NGS read length (可选)
   ngs_inner_distance: 200              # NGS inner distance (可选)
   ngs_std_dev: 20                      # NGS std dev (可选)

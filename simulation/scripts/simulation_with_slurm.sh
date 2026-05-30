@@ -29,6 +29,7 @@ export PYTHONUNBUFFERED=1
 [ -z $NGS_INNER ] && NGS_INNER=200
 [ -z $NGS_STD ] && NGS_STD=20
 [ -z $NGS_ERR ] && NGS_ERR=0.0005
+[ -z $GENERATE_NGS ] && GENERATE_NGS=false
 [ -z $TGS_MAXL ] && TGS_MAXL=300000
 [ -z $TGS_MINL ] && TGS_MINL=100
 [ -z $SIMULATOR ] && SIMULATOR=builtin
@@ -95,7 +96,7 @@ N_SUB=`awk -v sub_pop=$SUB_POP_SIZE -v pop=$POP_SIZE 'BEGIN{n_sub=int(pop/sub_po
 NGS_READS=`awk -v depth=$DEPTH -v g_l=$GENOME_SIZE -v c_l=$CONTIG_SIZE -v n_sub=$N_SUB -v r_l=150 -v inner=$NGS_INNER 'BEGIN{ratio=c_l/g_l; ngs_reads=int(ratio*(depth*g_l/(2*r_l+inner))/n_sub); print ngs_reads}'`
 TGS_READS=`awk -v depth=$DEPTH -v g_l=$GENOME_SIZE -v c_l=$CONTIG_SIZE -v n_sub=$N_SUB -v r_l=$TGS_MEANL 'BEGIN{ratio=c_l/g_l; tgs_reads=int(ratio*(depth*g_l/r_l)/n_sub); print tgs_reads}'`
 
-echo "Processing config: N_SUB=$N_SUB TGS_READS=$TGS_READS PROTOCOL=$PROTOCOL"
+echo "Processing config: N_SUB=$N_SUB TGS_READS=$TGS_READS PROTOCOL=$PROTOCOL GENERATE_NGS=$GENERATE_NGS"
 date
 
 if [ -f $CONTIG.0.pgd ]; then
@@ -128,11 +129,15 @@ if [ -f $CONTIG.0.pgd ]; then
                 fi
                 PBSIM_DEPTH=$(awk -v depth=$DEPTH -v pop=$POP_SIZE 'BEGIN{printf "%.2f", depth / pop}')
                 pbsim --strategy wgs \
-                      --method errhmm \
-                      --errhmm $PBSIM_MODEL \
+                      --method qshmm \
+                      --qshmm $PBSIM_MODEL \
                       --genome $CONTIG.$j.fa \
                       --depth $PBSIM_DEPTH \
-                      --prefix $CONTIG.${j}_tgs
+                      --prefix $CONTIG.${j}_tgs \
+                      --length-mean 26676 \
+                      --length-sd 16098 \
+                      --difference-ratio 39:24:36 \
+                      --hp-del-bias 6
                 # errhmm 输出 gzipped fq, 解压合并后重命名 read 避免多 contig/j 间冲突
                 zcat $CONTIG.${j}_tgs_*.fq.gz | \
                     awk -v prefix="${CONTIG}_${j}_" 'NR%4==1{print "@" prefix substr($0,2); next} {print}' \
@@ -149,6 +154,19 @@ if [ -f $CONTIG.0.pgd ]; then
                     --tgs-minl $TGS_MINL \
                     --protocol $PROTOCOL
             fi
+        fi
+
+        # generate NGS (optional, paired-end)
+        if [ "$GENERATE_NGS" == "true" ] && [ ! -f $CONTIG.${j}_1.fastq ]; then
+            python $SIMULATION_DIR/generate_NGS.py \
+                --pg $CONTIG.$j.fa \
+                --read-length $NGS_LEN \
+                --inner-distance $NGS_INNER \
+                --std-dev $NGS_STD \
+                --error-rate $NGS_ERR \
+                --reads $NGS_READS \
+                --fastq1 $CONTIG.${j}_1.fastq \
+                --fastq2 $CONTIG.${j}_2.fastq
         fi
 
         # remove intermediate sub-population genome
@@ -168,12 +186,18 @@ elif [ -f $CONTIG/$CONTIG.0_tgs.fasta ]; then
     cat */*_tgs.fasta > TGS.fasta
 fi
 
+# merge NGS (optional)
+if [ "$GENERATE_NGS" == "true" ] && [ -f $CONTIG/$CONTIG.0_1.fastq ]; then
+    cat */*_1.fastq > NGS_1.fastq
+    cat */*_2.fastq > NGS_2.fastq
+fi
+
 ################################
 ### Copy files to output dir ###
 ################################
 echo "Copying results to destination..."
 ls -lh
-cp -r TGS* $WORKDIR
+cp -r TGS* NGS* $WORKDIR 2>/dev/null
 echo "Done."
 echo ""
 

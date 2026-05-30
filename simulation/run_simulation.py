@@ -351,6 +351,13 @@ def step2_simulation(config, dry_run=False, **kwargs):
     if pbsim_model:
         env['PBSIM_MODEL'] = pbsim_model
 
+    # NGS 参数
+    seq_config = config.get('sequencing', {})
+    env['GENERATE_NGS'] = str(seq_config.get('generate_ngs', False)).lower()
+    env['NGS_LEN'] = str(seq_config.get('ngs_read_length', 150))
+    env['NGS_INNER'] = str(seq_config.get('ngs_inner_distance', 200))
+    env['NGS_STD'] = str(seq_config.get('ngs_std_dev', 20))
+
     print(f"任务数: {task_count}")
     print(f"SLURM 命令:")
     print(f"  {' '.join(cmd)}")

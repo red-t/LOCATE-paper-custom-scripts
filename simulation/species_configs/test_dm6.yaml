@@ -11,9 +11,18 @@ reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6.transposon.fa
 
+simulation:
+  simulator: pbsim
+  pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/QSHMM-ONT-HQ.model
+  population_size: 1000
+  sub_population_size: 50
+  germline_count: 500
+  avg_somatic_count: 0
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.7
+  nest_prob: 0
 # simulation:
-#   simulator: pbsim
-#   pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/ERRHMM-ONT-HQ.model
 #   population_size: 100
 #   sub_population_size: 100
 #   germline_count: 500
@@ -22,22 +31,17 @@ reference:
 #   divergence_rate: 0
 #   trunc_prob: 0.7
 #   nest_prob: 0
-simulation:
-  population_size: 100
-  sub_population_size: 100
-  germline_count: 500
-  avg_somatic_count: 0
-  min_distance: 9000
-  divergence_rate: 0
-  trunc_prob: 0.7
-  nest_prob: 0
 
-# sequencing:
-#   depths: [50]
-#   protocols: [ont]
 sequencing:
   depths: [50]
-  protocols: [ccs, clr]
+  protocols: [ont]
+  generate_ngs: false
+  ngs_read_length: 150
+  ngs_inner_distance: 200
+  ngs_std_dev: 20
+# sequencing:
+#   depths: [50]
+#   protocols: [ccs, clr]
 
 datasets:
   50: 1
@@ -49,7 +53,7 @@ slurm:
   mem_simulation: 20G
   mem_merge: 20G
   time: "4:00:00"
-  array_limit: 10
+  array_limit: 7
 
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 conda_envs:

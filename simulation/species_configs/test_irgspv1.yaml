@@ -11,18 +11,9 @@ reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.transposon.fa
 
-# simulation:
-#   simulator: pbsim
-#   pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/ERRHMM-ONT-HQ.model
-#   population_size: 2
-#   sub_population_size: 2
-#   germline_count: 1000
-#   avg_somatic_count: 0
-#   min_distance: 9000
-#   divergence_rate: 0
-#   trunc_prob: 0.7
-#   nest_prob: 0
 simulation:
+  simulator: pbsim
+  pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/QSHMM-ONT-HQ.model
   population_size: 2
   sub_population_size: 2
   germline_count: 1000
@@ -31,13 +22,26 @@ simulation:
   divergence_rate: 0
   trunc_prob: 0.7
   nest_prob: 0
+# simulation:
+#   population_size: 2
+#   sub_population_size: 2
+#   germline_count: 1000
+#   avg_somatic_count: 0
+#   min_distance: 9000
+#   divergence_rate: 0
+#   trunc_prob: 0.7
+#   nest_prob: 0
 
-# sequencing:
-#   depths: [50]
-#   protocols: [ont]
 sequencing:
   depths: [50]
-  protocols: [ccs, clr]
+  protocols: [ont]
+  generate_ngs: false
+  ngs_read_length: 150
+  ngs_inner_distance: 200
+  ngs_std_dev: 20
+# sequencing:
+#   depths: [50]
+#   protocols: [ccs, clr]
 
 datasets:
   50: 1

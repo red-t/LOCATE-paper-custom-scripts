@@ -11,9 +11,18 @@ reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.transposon.fa
 
+simulation:
+  simulator: pbsim
+  pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/QSHMM-ONT-HQ.model
+  population_size: 100
+  sub_population_size: 5
+  germline_count: 2500
+  avg_somatic_count: 0
+  min_distance: 9000
+  divergence_rate: 0
+  trunc_prob: 0.7
+  nest_prob: 0
 # simulation:
-#   simulator: pbsim
-#   pbsim_model: /zata/zippy/boxu/for_hzr/Software/pbsim3/data/ERRHMM-ONT-HQ.model
 #   population_size: 2
 #   sub_population_size: 2
 #   germline_count: 2500
@@ -22,32 +31,27 @@ reference:
 #   divergence_rate: 0
 #   trunc_prob: 0.7
 #   nest_prob: 0
-simulation:
-  population_size: 2
-  sub_population_size: 2
-  germline_count: 2500
-  avg_somatic_count: 0
-  min_distance: 9000
-  divergence_rate: 0
-  trunc_prob: 0.7
-  nest_prob: 0
 
-# sequencing:
-#   depths: [50]
-#   protocols: [ont]
 sequencing:
   depths: [50]
-  protocols: [ccs, clr]
+  protocols: [ont]
+  generate_ngs: false
+  ngs_read_length: 150
+  ngs_inner_distance: 200
+  ngs_std_dev: 20
+# sequencing:
+#   depths: [50]
+#   protocols: [ccs, clr]
 
 datasets:
   50: 1
 
 slurm:
-  partition: 5days
+  partition: 12hours
   exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
-  threads: 24
-  mem_simulation: 20G
-  mem_merge: 20G
+  threads: 12
+  mem_simulation: 30G
+  mem_merge: 30G
   time: "12:00:00"
   array_limit: 12
 
