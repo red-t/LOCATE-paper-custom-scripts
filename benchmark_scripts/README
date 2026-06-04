@@ -1,0 +1,81 @@
+
+This directory contains benchmark scripts for running intersection-based
+evaluation, summarising caller performance, calculating breakpoint and sequence
+metrics, and generating publication-ready plots.
+
+Configuration
+
+All scripts that reference user-specific paths define `user_path` near the top.
+
+
+The scripts use `user_path` for user-specific project roots. Reference paths
+under `/zata/...` are left explicit because they point to annotation resources;
+update those paths to match your local annotation directory before running the
+workflows.
+
+Dependencies
+
+- bash
+- awk, sed, grep, sort, bc
+- bedtools
+- bcftools
+- minimap2
+- Python 3 with `pysam`
+- R with `ggplot2`, `cowplot`, `dplyr`, `reshape2`, `ggbreak`, `xlsx`,
+  `openxlsx`, `ggforce`, `ggpmisc`, and related plotting dependencies
+
+Workflow
+
+1. Run a sample-specific intersection workflow:
+
+    - `00_run_intersection_simu_hg38.sh`: simulated human hg38 benchmark.
+    - `00_run_intersection_simu_dm6.sh`: simulated Drosophila dm6 benchmark.
+    - `00_run_intersection_simu_rice.sh`: simulated rice IRGSPv1 benchmark.
+    - `00_run_intersection_giab.sh`: GIAB HG002 benchmark.
+    - `00_run_intersection_giab_HG002_3.sh`: HG002_3 benchmark.
+
+   These scripts format caller outputs, build BED files, call
+   `01_intersect_gold.sh`, and then calculate distance/divergence summaries.
+
+2. Compare caller results against the gold standard:
+
+    - `01_intersect_gold.sh`
+
+   This shared script merges caller BED records, intersects them with gold
+   insertions, and writes precision, sensitivity, F1-score, false-positive, and
+   missed-insertion summaries.
+
+3. Calculate breakpoint and sequence metrics:
+
+    - `02_cal_dis_div3.py` + `03_cal_div3.sh`: simulation data.
+    - `02_cal_dis_div3_giab.py` + `03_cal_div3_giab.sh`: GIAB data.
+
+   The Python scripts calculate breakpoint distance, transposable-element
+   coordinate distance, insertion-sequence identity, divergence, and genotype
+   agreement where available. The shell scripts run minimap2 for the temporary
+   sequence alignments used by the Python scripts.
+
+4. Create merged plot tables:
+
+    - `04_intersection_create_plot_data_hg38.sh`
+    - `04_intersection_create_plot_data_dm6.sh`
+    - `04_intersection_create_plot_data_giab.sh`
+    - `04_intersection_create_plot_data_HG002_3.sh`
+
+   Main outputs:
+   Users can use these files to draw pictures themselves.
+
+    - `performance.txt`: per-caller sensitivity, precision, and F1-score.
+    - `all.merge.dis.txt`: merged breakpoint, TE-distance, identity,
+      divergence, and genotype metrics.
+    - `all.merge.count.txt`: caller and gold insertion counts for hg38.
+
+
+
+5. Generate plots:
+
+    - `05_intersection_plot_dm6.R`
+    - `05_intersection_plot_hg38.R`
+    - `05_intersection_plot_giab.R`
+    - `05_intersection_plot_HG002_3.R`
+
