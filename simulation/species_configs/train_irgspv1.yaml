@@ -111,9 +111,9 @@ ml_training:
         startIndex, endIndex, numSeg, numSeg2, directionFlag,
         bgDepth, teAlignedFrac, teTid, isInBlacklist, probability] # 额外丢弃 numSeg 和 bgDepth
       train_ratios:
-        - name: 1V20
+        - name: 1V30
       test_ratios:
-        - name: 1V20
+        - name: 1V30
       negative_sampling: with_replacement   # 负样本带放回抽样（数据有限）
 
 # 程序路径

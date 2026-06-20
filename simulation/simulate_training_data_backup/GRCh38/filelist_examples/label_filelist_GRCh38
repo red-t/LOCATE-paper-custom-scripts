@@ -1,3 +1,0 @@
-training_dataset_0/map-hifi/TGS.bam your_path_to/GRCh38.rmsk.bed your_path_to/GRCh38.gap.bed your_path_to/GRCh38.transposon.fa
-training_dataset_1/map-pb/TGS.bam your_path_to/GRCh38.rmsk.bed your_path_to/GRCh38.gap.bed your_path_to/GRCh38.transposon.fa
-training_dataset_2/map-ont/TGS.bam your_path_to/GRCh38.rmsk.bed your_path_to/GRCh38.gap.bed your_path_to/GRCh38.transposon.fa

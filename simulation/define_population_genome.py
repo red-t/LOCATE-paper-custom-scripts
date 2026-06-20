@@ -1,4 +1,5 @@
 import argparse
+import os
 from define_pgdf_utils import getGermOrder, defineHeader, defineBody
 
 
@@ -25,7 +26,30 @@ def getArgs():
 if __name__ == '__main__':
     args = getArgs()
 
-    if (args.numGerm + args.numSoma) > 0:        
+    # Build TE classification dict from .transposon.class file
+    args.teClassDict = None
+    if args.teFa is not None:
+        class_file = args.teFa[:-3] + '.class' if args.teFa.endswith('.fa') else args.teFa + '.class'
+        fai_file = args.teFa + '.fai'
+        if os.path.exists(class_file) and os.path.exists(fai_file):
+            order_to_name = {}
+            with open(fai_file) as f:
+                for order, line in enumerate(f, 1):
+                    order_to_name[order] = line.split()[0]
+            name_to_class = {}
+            with open(class_file) as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if len(parts) >= 2:
+                        name_to_class[parts[0]] = parts[1]
+            order_to_class = {}
+            for order, name in order_to_name.items():
+                if name in name_to_class:
+                    order_to_class[order] = name_to_class[name]
+            if order_to_class:
+                args.teClassDict = order_to_class
+
+    if (args.numGerm + args.numSoma) > 0:
         germOrderSet = getGermOrder(args.numGerm, args.numSoma)
 
         # define header of the pgd-file (population genome definition)

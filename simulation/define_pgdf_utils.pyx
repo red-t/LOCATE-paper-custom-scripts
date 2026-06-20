@@ -86,7 +86,9 @@ cpdef tuple defineIns(int insOrder, dict teDict, int numTe, str insType, object 
 
         ### Define Truncations ###
         if args.species == "human":
-            truncateId, truncateExpress, truncateLen = defineTruncateTest(teOrder, teLen)
+            truncateId, truncateExpress, truncateLen = defineTruncateHuman(teOrder, teLen)
+        elif args.teClassDict is not None:
+            truncateId, truncateExpress, truncateLen = defineTruncateByClass(args.truncProb, teOrder, teLen, args.teClassDict)
         else:
             truncateId, truncateExpress, truncateLen = defineTruncateTrain(args.truncProb, teLen)
 
@@ -160,7 +162,7 @@ cdef tuple defineTruncateTrain(float truncProb, int teLen):
 #
 #
 #
-cdef tuple defineTruncateTest(int teOrder, int teLen):
+cdef tuple defineTruncateHuman(int teOrder, int teLen):
     cdef str truncateId = "U", truncateExpress = ""
     cdef int truncateStart, truncateLen = 0
 
@@ -184,6 +186,34 @@ cdef tuple defineTruncateTest(int teOrder, int teLen):
     
     # 5' truncation = 50%
     truncateStart = 1
+    truncateExpress = "[{0}..{1}]".format(truncateStart, truncateStart + truncateLen - 1)
+    return truncateId, truncateExpress, truncateLen
+#
+#
+#
+cdef tuple defineTruncateByClass(float truncProb, int teOrder, int teLen, dict teClassDict):
+    cdef str truncateId = "U", truncateExpress = ""
+    cdef int edgeLen, truncateStart, truncateLen = 0
+
+    cdef object teClass = teClassDict.get(teOrder)
+    if teClass is None:
+        return defineTruncateTrain(truncProb, teLen)
+
+    if random.random() > truncProb:
+        return truncateId, truncateExpress, truncateLen
+
+    truncateId = "T"
+    truncateLen = int(random.uniform(0.1, 0.3) * teLen)
+
+    # LINE / RETROPOSON / SINE ==> 5' truncation
+    if teClass == "LINE" or teClass == "RETROPOSON" or teClass == "SINE":
+        truncateStart = 1
+        truncateExpress = "[{0}..{1}]".format(truncateStart, truncateStart + truncateLen - 1)
+        return truncateId, truncateExpress, truncateLen
+
+    # DNA / LTR / RC / others ==> internal truncation with edge margin
+    edgeLen = int(0.15 * teLen)
+    truncateStart = random.randint(edgeLen, teLen - edgeLen - truncateLen)
     truncateExpress = "[{0}..{1}]".format(truncateStart, truncateStart + truncateLen - 1)
     return truncateId, truncateExpress, truncateLen
 #

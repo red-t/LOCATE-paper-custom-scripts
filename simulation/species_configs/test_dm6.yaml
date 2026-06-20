@@ -20,7 +20,7 @@ simulation:
   avg_somatic_count: 0
   min_distance: 9000
   divergence_rate: 0
-  trunc_prob: 0.7
+  trunc_prob: 0.1
   nest_prob: 0
 # simulation:
 #   population_size: 100
@@ -29,7 +29,7 @@ simulation:
 #   avg_somatic_count: 0
 #   min_distance: 9000
 #   divergence_rate: 0
-#   trunc_prob: 0.7
+#   trunc_prob: 0.1
 #   nest_prob: 0
 
 sequencing:

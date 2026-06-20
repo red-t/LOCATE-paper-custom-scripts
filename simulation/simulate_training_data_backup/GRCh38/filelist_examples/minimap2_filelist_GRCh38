@@ -1,3 +1,0 @@
-your_path_to/GRCh38_no_alt.fa training_dataset_0/TGS.fasta map-hifi
-your_path_to/GRCh38_no_alt.fa training_dataset_1/TGS.fasta map-clr
-your_path_to/GRCh38_no_alt.fa training_dataset_2/TGS.fasta map-ont

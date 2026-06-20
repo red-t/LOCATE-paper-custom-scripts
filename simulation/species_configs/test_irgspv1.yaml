@@ -20,7 +20,7 @@ simulation:
   avg_somatic_count: 0
   min_distance: 9000
   divergence_rate: 0
-  trunc_prob: 0.7
+  trunc_prob: 0
   nest_prob: 0
 # simulation:
 #   population_size: 2
@@ -29,13 +29,13 @@ simulation:
 #   avg_somatic_count: 0
 #   min_distance: 9000
 #   divergence_rate: 0
-#   trunc_prob: 0.7
+#   trunc_prob: 0
 #   nest_prob: 0
 
 sequencing:
   depths: [50]
   protocols: [ont]
-  generate_ngs: false
+  generate_ngs: true
   ngs_read_length: 150
   ngs_inner_distance: 200
   ngs_std_dev: 20
