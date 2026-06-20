@@ -1,14 +1,14 @@
-# rice (IRGSPv1) 训练数据配置
-# 请根据实际情况修改路径和参数
+# rice (IRGSPv1) training data configuration
+# Modify paths and parameters according to your environment
 
 species: IRGSPv1
 mode: 1
 share_pgdf: false
 
-# 输出目录
+# Output directory
 output_dir: /zata/zippy/boxu/for_hzr/Simulation
 
-# 参考文件路径
+# Reference file paths
 reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/IRGSPv1.transposon.fa
@@ -18,23 +18,23 @@ reference:
   soma_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_S_1V30
   germ_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_G_1V1
 
-# 模拟参数 - 根据水稻特性调整
+# Simulation parameters - tuned for rice genome characteristics
 simulation:
-  population_size: 100                # 群体基因组大小
-  sub_population_size: 10             # 子群体大小
-  germline_count: 1000                # Germline insertion 数量
-  avg_somatic_count: 50               # 平均 somatic insertion 数量
-  min_distance: 9000                  # 最小距离 (根据水稻基因组大小调整)
+  population_size: 100                # Population genome size
+  sub_population_size: 10             # Sub-population size
+  germline_count: 1000                # Number of germline insertions
+  avg_somatic_count: 50               # Average number of somatic insertions
+  min_distance: 9000                  # Minimum distance (adjusted for rice genome size)
   divergence_rate: 0                  # TE divergence rate
-  trunc_prob: 0.1                     # Truncation 概率
-  nest_prob: 0.1                      # Nested insertion 概率
+  trunc_prob: 0.1                     # Truncation probability
+  nest_prob: 0.1                      # Nested insertion probability
 
-# 测序参数
+# Sequencing parameters
 sequencing:
-  depths: [10, 20, 30, 40, 50]        # 测序深度
-  protocols: [ccs, clr, ont]          # 测序协议
+  depths: [10, 20, 30, 40, 50]        # Sequencing depths
+  protocols: [ccs, clr, ont]          # Sequencing protocols
 
-# 数据集配置
+# Dataset configuration
 datasets:
   50: 10
   40: 10
@@ -42,7 +42,7 @@ datasets:
   20: 10
   10: 10
 
-# SLURM 配置 - 根据集群调整
+# SLURM configuration - adjust based on your cluster
 slurm:
   partition: 4hours
   exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
@@ -54,7 +54,7 @@ slurm:
   time: "4:00:00"
   array_limit: 10
 
-# Conda 环境
+# Conda environment
 conda_envs:
   default: simulation
   step0: simulation
@@ -64,59 +64,59 @@ conda_envs:
   step7: TEMP3
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 
-# Step 6 分类参数
+# Step 6 classification parameters
 classification:
   somatic_freq: 0.01
 
-# Step 7: ML 训练 Pipeline 配置
+# Step 7: ML training pipeline configuration
 ml_training:
-  enabled: true                             # 是否启用 Step 7
-  output_dir: null                          # null = 自动: {output_dir}/For_ML/{species}/
-  test_frac: 0.1                            # 测试集比例（从各 depth/protocol 均匀抽取，默认 0.1）
-  random_seed: 42                           # 随机种子（保证可复现，默认 42）
+  enabled: true                             # Enable Step 7
+  output_dir: null                          # null = auto: {output_dir}/For_ML/{species}/
+  test_frac: 0.1                            # Test set fraction (evenly sampled from each depth/protocol, default 0.1)
+  random_seed: 42                           # Random seed (for reproducibility, default 42)
 
-  # Blacklist 参数
+  # Blacklist parameters
   blacklist:
-    min_sample_overlap: 10                  # 一个 Negative case 至少被多少个样本共享才列入黑名单（默认 10）
-    max_length: 50                          # 一个黑名单区域的最大长度（默认 50）
+    min_sample_overlap: 10                  # Minimum number of samples sharing a negative case to be blacklisted (default 10)
+    max_length: 50                          # Maximum length of a blacklist region (default 50)
 
-  # Mode 定义（germline 高频 / somatic 低频）
+  # Mode definitions (germline high-frequency / somatic low-frequency)
   modes:
     germline:
       enabled: true
-      positive_sources: [TP_clt_G.txt]      # 正类来源文件
+      positive_sources: [TP_clt_G.txt]      # Positive class source files
       positive_filter:
-        cltType_expr: "==0"                 # cltType == 0 为 germline
+        cltType_expr: "==0"                 # cltType == 0 indicates germline
         score_threshold: 0.8                # teAlignedFrac >= 0.8
-      pos_label: 1                          # 正类标签值
-      dedup_blacklist: BlackList_G.bed      # 去重用的黑名单
+      pos_label: 1                          # Positive class label value
+      dedup_blacklist: BlackList_G.bed      # Blacklist for deduplication
       drop_columns: [chrom, refStart, refEnd, cid, strand, sample_id,
         startIndex, endIndex, numSeg2, directionFlag, cltType,
-        teAlignedFrac, teTid, isInBlacklist, probability]         # 训练时丢弃的列（保留 numSeg）
-      train_ratios:                         # 训练正负比例
-        - name: ORG                         # ORG = 全量数据
+        teAlignedFrac, teTid, isInBlacklist, probability]         # Columns to drop during training (keep numSeg)
+      train_ratios:                         # Training positive:negative ratios
+        - name: ORG                         # ORG = full data
       test_ratios:
         - name: ORG
-      negative_sampling: without_replacement  # 负样本不带放回抽样
+      negative_sampling: without_replacement  # Negative sampling without replacement
 
     somatic:
       enabled: true
-      positive_sources: [TP_clt_G.txt, TP_clt_S.txt]  # 正类来源（G+S 合并）
+      positive_sources: [TP_clt_G.txt, TP_clt_S.txt]  # Positive sources (G+S combined)
       positive_filter:
-        cltType_expr: ">0"                 # cltType > 0 为 somatic
+        cltType_expr: ">0"                 # cltType > 0 indicates somatic
         score_threshold: 1                  # teAlignedFrac >= 1
-      pos_label: 2                          # 正类标签值
-      dedup_blacklist: BlackList_S.bed      # 去重用的黑名单
+      pos_label: 2                          # Positive class label value
+      dedup_blacklist: BlackList_S.bed      # Blacklist for deduplication
       drop_columns: [chrom, refStart, refEnd, cid, strand, sample_id,
         startIndex, endIndex, numSeg, numSeg2, directionFlag,
-        bgDepth, teAlignedFrac, teTid, isInBlacklist, probability] # 额外丢弃 numSeg 和 bgDepth
+        bgDepth, teAlignedFrac, teTid, isInBlacklist, probability] # Also drop numSeg and bgDepth
       train_ratios:
         - name: 1V30
       test_ratios:
         - name: 1V30
-      negative_sampling: with_replacement   # 负样本带放回抽样（数据有限）
+      negative_sampling: with_replacement   # Negative sampling with replacement (limited data)
 
-# 程序路径
+# Program paths
 programs:
   simulation_dir: null
   label_dir: null

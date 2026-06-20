@@ -1,5 +1,5 @@
-# fly (dm6) 测试数据配置
-# 使用 pbsim3 生成 ONT reads, mode=2 确保物种特异 TE 比例
+# fly (dm6) test data configuration
+# Use pbsim3 to generate ONT reads, mode=2 ensures species-specific TE ratio
 
 species: fly
 mode: 2

@@ -1,29 +1,29 @@
 # LOCATE — TE Insertion Simulation Pipeline
 
-用于生成模拟 TE（Transposable Element）insertion 数据的通用 pipeline，支持多物种、多测序协议，可生成训练数据和测试数据。
+A general-purpose pipeline for generating simulated TE (Transposable Element) insertion data. Supports multiple species and sequencing protocols, capable of generating both training and testing data.
 
-## 仓库结构
+## Repository Structure
 
 ```
 LOCATE-paper-custom-scripts/
-├── simulation/                    # 模拟数据生成 pipeline
-│   ├── run_simulation.py          # 主控脚本（7 步 pipeline）
-│   ├── generate_filelists.py      # SLURM 任务 filelist 生成
+├── simulation/                    # Simulation data generation pipeline
+│   ├── run_simulation.py          # Main orchestration script (7-step pipeline)
+│   ├── generate_filelists.py      # SLURM task filelist generation
 │   ├── define_population_genome.py
 │   ├── build-population-genome.py
-│   ├── generate_TGS.py            # TGS reads 生成
-│   ├── generate_NGS.py            # NGS reads 生成
-│   ├── config_template.yaml       # 配置文件模板
-│   ├── species_configs/           # 物种特定配置
+│   ├── generate_TGS.py            # TGS reads generation
+│   ├── generate_NGS.py            # NGS reads generation
+│   ├── config_template.yaml       # Configuration file template
+│   ├── species_configs/           # Species-specific configurations
 │   │   ├── dm6.yaml               # D. melanogaster
-│   │   ├── rice.yaml              # 水稻（模板）
-│   │   └── test.yaml              # 测试用最小配置
-│   ├── scripts/                   # SLURM 作业脚本
+│   │   ├── rice.yaml              # Rice (template)
+│   │   └── test.yaml              # Minimal test configuration
+│   ├── scripts/                   # SLURM job scripts
 │   │   ├── simulation_with_slurm.sh
 │   │   ├── merge_with_slurm.sh
 │   │   ├── minimap2_with_slurm.sh
 │   │   └── label_with_slurm.sh
-│   ├── label/                     # 标注与分类脚本
+│   ├── label/                     # Labeling and classification scripts
 │   │   ├── label_protocol.sh
 │   │   ├── label_protocol_local.sh
 │   │   ├── Filter_TP_and_FP.py
@@ -31,29 +31,28 @@ LOCATE-paper-custom-scripts/
 │   │   ├── merge_TP_and_FP.sh
 │   │   ├── classify_germline_somatic.py
 │   │   └── classify_germline_somatic.sh
-│   ├── simulate_training_data/    # 训练数据生成脚本（GRCh38 / dm6）
-│   └── simulate_test_data/        # 测试数据生成脚本（GRCh38 / dm6）
-├── TEMP3/                         # TE insertion 检测工具
-│   ├── TEMP3.py                   # 主入口
-│   ├── TEMP3/                     # 核心模块（Cython + C）
+│   ├── simulate_training_data/    # Training data generation scripts (GRCh38 / dm6)
+│   └── simulate_test_data/        # Test data generation scripts (GRCh38 / dm6)
+├── TEMP3/                         # TE insertion detection tool
+│   ├── TEMP3.py                   # Main entry point
+│   ├── TEMP3/                     # Core modules (Cython + C)
 │   └── setup.py
-└── model_training/                # AutoGluon 分类模型训练
-    ├── training.py                # 训练入口（支持 --drop-cols / --pos-label）
-    └── pipeline/                  # ML 训练 pipeline（Step 7）
-        ├── run_pipeline.py        # 独立编排脚本
-        ├── config.py              # YAML 配置解析
-        ├── defaults.py            # 列名常量与 mode 默认参数
-        ├── utils.py               # 工具函数
-        ├── evaluate.py            # 共享评估函数
-        ├── stage1_preprocess.py   # 数据预处理（merge / split / blacklist / dedup）
-        ├── stage2_shuffle.py      # 按比例采样 P/N 数据
-        ├── stage3_train.py        # 遍历比例训练 AutoGluon 模型
-        └── stage4_filter_eval.py  # 黑名单过滤 + 模型评估
+└── model_training/                # AutoGluon classification model training
+    └── pipeline/                  # ML training pipeline (Step 7)
+        ├── run_pipeline.py        # Standalone orchestration script
+        ├── config.py              # YAML configuration parser
+        ├── defaults.py            # Column name constants and mode defaults
+        ├── utils.py               # Utility functions
+        ├── evaluate.py            # Shared evaluation functions
+        ├── stage1_preprocess.py   # Data preprocessing (merge / split / blacklist / dedup)
+        ├── stage2_shuffle.py      # Proportional P/N data sampling
+        ├── stage3_train.py        # Train AutoGluon models across ratios
+        └── stage4_filter_eval.py  # Blacklist filtering + model evaluation
 ```
 
-## 环境配置
+## Environment Setup
 
-### 1. 创建 simulation 环境
+### 1. Create simulation environment
 
 ```shell
 cd simulation/
@@ -61,7 +60,7 @@ mamba env create -f simulation.env.yaml
 python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
 
-### 2. 创建 TEMP3 环境（用于 labeling）
+### 2. Create TEMP3 environment (for labeling)
 
 ```shell
 cd TEMP3/
@@ -69,130 +68,130 @@ mamba env create -f TEMP3.env.yaml
 python setup.py build_ext -i && rm -r build && rm -f *.c
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 准备参考文件
+### 1. Prepare reference files
 
-每个物种需要以下参考文件：
+Each species requires the following reference files:
 
-| 文件 | 说明 | 要求 |
-|------|------|------|
-| `template.fa` | 参考基因组模板 | 需 samtools faidx 索引 |
-| `transposon.fa` | TE consensus 序列 | 需 samtools faidx 索引 |
-| `repeat.bed` | RepeatMasker 注释 | BED 格式 |
-| `gap.bed` | Gap 区域注释 | BED 格式 |
+| File | Description | Requirements |
+|------|------------|--------------|
+| `template.fa` | Reference genome template | Requires samtools faidx index |
+| `transposon.fa` | TE consensus sequences | Requires samtools faidx index |
+| `repeat.bed` | RepeatMasker annotations | BED format |
+| `gap.bed` | Gap region annotations | BED format |
 
-### 2. 创建配置文件
+### 2. Create configuration file
 
 ```shell
 cp config_template.yaml species_configs/<species>.yaml
-# 编辑配置文件，填入参考文件路径和参数
+# Edit the configuration file with reference file paths and parameters
 ```
 
-### 3. 运行 Pipeline
+### 3. Run Pipeline
 
 ```shell
-# 查看所有步骤
+# View all steps
 python run_simulation.py --config species_configs/dm6.yaml
 
-# Step 0: 定义群体基因组（本地运行）
+# Step 0: Define population genome (local execution)
 python run_simulation.py --config species_configs/dm6.yaml --step 0
 
-# Step 1: 生成 filelists
+# Step 1: Generate filelists
 python run_simulation.py --config species_configs/dm6.yaml --step 1
 
-# Step 2-5: 依次提交 SLURM 任务
+# Step 2-5: Submit SLURM jobs sequentially
 python run_simulation.py --config species_configs/dm6.yaml --step 2
 python run_simulation.py --config species_configs/dm6.yaml --step 3
 python run_simulation.py --config species_configs/dm6.yaml --step 4
 python run_simulation.py --config species_configs/dm6.yaml --step 5
 
-# Step 6: 分类 germline/somatic（本地运行）
+# Step 6: Classify germline/somatic (local execution)
 python run_simulation.py --config species_configs/dm6.yaml --step 6
 
-# Step 7: ML 模型训练（本地运行）
+# Step 7: ML model training (local execution)
 python run_simulation.py --config species_configs/dm6.yaml --step 7
 
-# 或跳过前置步骤，只执行 Step 7:
+# Or skip preceding steps and only execute Step 7:
 python run_simulation.py --config species_configs/dm6.yaml --start 7 --step 7
 
-# Step 7 也可以独立运行（不依赖于 run_simulation.py）:
-python model_training/pipeline/run_pipeline.py --config species_configs/dm6.yaml --mode all
+# Step 7 can also run independently (not requiring run_simulation.py):
+python run_simulation.py --config species_configs/dm6.yaml --step 7 --dry-run
 ```
 
-Dry-run 模式（仅显示命令，不执行）：
+Dry-run mode (show commands without executing):
 
 ```shell
 python run_simulation.py --config species_configs/dm6.yaml --step 0 --dry-run
 ```
 
-## Pipeline 步骤详解
+## Pipeline Step Details
 
-| Step | 名称 | 说明 | 运行方式 | 核心脚本 |
-|------|------|------|----------|----------|
-| 0 | define_pgdf | 定义群体基因组，生成 PGD 文件 | 本地 | `define_population_genome.py` |
-| 1 | generate_filelists | 生成 SLURM 任务所需的 filelists | 本地 | `generate_filelists.py` |
-| 2 | simulation | 构建 population genome，生成 TGS reads | SLURM | `scripts/simulation_with_slurm.sh` |
-| 3 | merge | 合并各 chromosome 的 reads | SLURM | `scripts/merge_with_slurm.sh` |
-| 4 | minimap2 | 将 reads 比对到参考基因组 | SLURM | `scripts/minimap2_with_slurm.sh` |
-| 5 | label | 检测 TE insertion 并标注 TP/FP | SLURM | `scripts/label_with_slurm.sh` → TEMP3 + `label/Filter_TP_and_FP.py` |
-| 6 | classify | 分类 germline/somatic insertion | 本地 | `label/classify_germline_somatic.py` |
-| 7 | ml_training | ML 模型训练（AutoGluon） | 本地 | `model_training/pipeline/run_pipeline.py` |
+| Step | Name | Description | Execution | Core Script |
+|------|------|-------------|-----------|-------------|
+| 0 | define_pgdf | Define population genome, generate PGD files | Local | `define_population_genome.py` |
+| 1 | generate_filelists | Generate filelists required by SLURM tasks | Local | `generate_filelists.py` |
+| 2 | simulation | Build population genome, generate TGS reads | SLURM | `scripts/simulation_with_slurm.sh` |
+| 3 | merge | Merge per-chromosome reads | SLURM | `scripts/merge_with_slurm.sh` |
+| 4 | minimap2 | Align reads to reference genome | SLURM | `scripts/minimap2_with_slurm.sh` |
+| 5 | label | Detect TE insertions and classify TP/FP | SLURM | `scripts/label_with_slurm.sh` → TEMP3 + `label/Filter_TP_and_FP.py` |
+| 6 | classify | Classify germline/somatic insertions | Local | `label/classify_germline_somatic.py` |
+| 7 | ml_training | ML model training (AutoGluon) | Local | `model_training/pipeline/run_pipeline.py` |
 
 ### Step 0 — define_pgdf
 
-定义群体基因组（Population Genome Definition），为每个 contig 生成 `.pgd` 文件，记录所有 TE insertion 的位置、类型和频率信息。
+Defines the Population Genome Definition. Generates `.pgd` files for each contig, recording all TE insertion positions, types, and frequency information.
 
 ### Step 1 — generate_filelists
 
-根据配置生成四个 filelist 文件，供 SLURM 任务使用：
-- `simulation_filelist` — Step 2 的输入
-- `merge_filelist` — Step 3 的输入
-- `minimap2_filelist` — Step 4 的输入
-- `label_filelist` — Step 5 的输入
+Generates four filelist files for SLURM tasks based on configuration:
+- `simulation_filelist` — input for Step 2
+- `merge_filelist` — input for Step 3
+- `minimap2_filelist` — input for Step 4
+- `label_filelist` — input for Step 5
 
 ### Step 2 — simulation
 
-构建群体基因组并生成 TGS reads。每个 SLURM 任务处理一个 contig/子群体组合，生成对应染色体的 reads。
+Builds the population genome and generates TGS reads. Each SLURM task processes one contig/sub-population combination and generates reads for the corresponding chromosome.
 
 ### Step 3 — merge
 
-将 per-contig 的 TGS reads 合并为单个 `TGS.fasta` 文件。
+Merges per-contig TGS reads into a single `TGS.fasta` file.
 
 ### Step 4 — minimap2
 
-使用 minimap2 将 reads 比对到参考基因组，根据协议选择不同的 preset（map-hifi / map-pb / map-ont），输出排序后的 BAM 文件。
+Aligns reads to the reference genome using minimap2, with protocol-specific presets (map-hifi / map-pb / map-ont). Outputs sorted BAM files.
 
 ### Step 5 — label
 
-运行 TEMP3 检测 TE insertion candidates，然后通过 `Filter_TP_and_FP.py` 与 ground truth 比对，分类为 TP（真阳性）和 FP（假阳性）。
+Runs TEMP3 to detect TE insertion candidates, then compares against ground truth using `Filter_TP_and_FP.py` to classify TP (true positive) and FP (false positive).
 
 ### Step 6 — classify
 
-根据 insertion 频率将 TP 分为 germline（高频）和 somatic（低频），输出 `TP_clt_G.txt` 和 `TP_clt_S.txt`。
+Classifies TP insertions into germline (high-frequency) and somatic (low-frequency) based on insertion frequency. Outputs `TP_clt_G.txt` and `TP_clt_S.txt`.
 
 ### Step 7 — ml_training
 
-使用 Step 5-6 输出的标注数据训练 AutoGluon 分类模型。通过 YAML 配置的 `ml_training` 段控制参数。
+Trains AutoGluon classification models using labeled data from Steps 5-6. Controlled by the `ml_training` section in the YAML configuration.
 
-流程：
-1. **preprocess** — 遍历 filelist 读取各样本的 `TP_clt_G.txt`/`TP_clt_S.txt`/`FP_clt.txt`，按 `cltType` 和 `teAlignedFrac` 过滤、插入 sample_id、合并
-2. **shuffle** — 按配置的 P/N 比例（如 ORG、1V1、1V30）对正负样本采样
-3. **train** — 对每个比例训练 AutoGluon TabularPredictor 模型
-4. **evaluate** — 用 BlackList 过滤测试数据、评估模型、输出 summary
+Workflow:
+1. **preprocess** — iterate through filelists, read per-sample `TP_clt_G.txt`/`TP_clt_S.txt`/`FP_clt.txt`, filter by `cltType` and `teAlignedFrac`, insert sample_id, merge
+2. **shuffle** — sample positive and negative data according to configured P/N ratios (e.g., ORG, 1V1, 1V30)
+3. **train** — train AutoGluon TabularPredictor models for each ratio
+4. **evaluate** — filter test data with BlackList, evaluate models, output summary
 
-支持两种 mode：
-- **germline**（高频）：`cltType==0`、`teAlignedFrac>=0.8`、正类来源仅 `TP_clt_G.txt`
-- **somatic**（低频）：`cltType>0`、`teAlignedFrac>=1`、正类来源 `TP_clt_G.txt` + `TP_clt_S.txt`
+Supports two modes:
+- **germline** (high-frequency): `cltType==0`, `teAlignedFrac>=0.8`, positive sources from `TP_clt_G.txt` only
+- **somatic** (low-frequency): `cltType>0`, `teAlignedFrac>=1`, positive sources from `TP_clt_G.txt` + `TP_clt_S.txt`
 
-输出目录结构：
+Output directory structure:
 ```
 {output_dir}/For_ML/{species}/
   germline/
     Train/         train_P/N_{ratio}.txt
     Test/          test_P/N_{protocol}_{ratio}.txt
     BlackList*.bed
-    {species}_G_{ratio}/        # AutoGluon 模型目录
+    {species}_G_{ratio}/        # AutoGluon model directory
     {species}_G_summary_Dedup.txt
   somatic/
     Train/
@@ -202,27 +201,27 @@ python run_simulation.py --config species_configs/dm6.yaml --step 0 --dry-run
     {species}_S_summary_Dedup.txt
 ```
 
-## 输出文件
+## Output Files
 
-每个数据集的主要输出结构：
+Main output structure per dataset:
 
 ```
 <output_dir>/<dataset_id>_<protocol>/
-├── TGS.fasta                         # 模拟的 TGS reads
+├── TGS.fasta                         # Simulated TGS reads
 ├── <chrom>/
-│   ├── <chrom>.ins.summary           # Insertion 摘要
-│   └── <chrom>.ins.sequence          # Insertion 序列
-├── map-hifi/TGS.bam                  # HiFi 比对结果
-├── map-pb/TGS.bam                    # PacBio CLR 比对结果
-├── map-ont/TGS.bam                   # ONT 比对结果
+│   ├── <chrom>.ins.summary           # Insertion summary
+│   └── <chrom>.ins.sequence          # Insertion sequences
+├── map-hifi/TGS.bam                  # HiFi alignment results
+├── map-pb/TGS.bam                    # PacBio CLR alignment results
+├── map-ont/TGS.bam                   # ONT alignment results
 └── result_no_secondary/
-    ├── TP_clt.txt                    # 全部真阳性
+    ├── TP_clt.txt                    # All true positives
     ├── TP_clt_G.txt                  # Germline TP
     ├── TP_clt_S.txt                  # Somatic TP
-    └── FP_clt.txt                    # 假阳性
+    └── FP_clt.txt                    # False positives
 ```
 
-### 输出文件字段说明
+### Output File Fields
 
 ```
 Column  Value               Description
@@ -239,7 +238,7 @@ Column  Value               Description
 10      directionFlag       bitwise flag representing cluster direction
                                 1: forward
                                 2: reverse
-                                other: unkown
+                                other: unknown
 11      cltType             cluster type
                                 0: germline (multiple support reads)
                                 1: somatic (1 support read & 1 alignment)
@@ -271,18 +270,17 @@ Column  Value               Description
 33      probability         the probability of the cluster to be a positive insertion
 ```
 
+## Configuration File Reference
 
-## 配置文件说明
-
-### 完整参数列表
+### Complete Parameter List
 
 ```yaml
-# === 基本信息 ===
-species: "dm6"                # 物种标识
-mode: 1                       # 1=训练, 2=测试
-share_pgdf: true              # 是否跨测序协议共享 PGD
+# === Basic information ===
+species: "dm6"                # Species identifier
+mode: 1                       # 1=training, 2=testing
+share_pgdf: true              # Share PGD across sequencing protocols
 
-# === 路径配置 ===
+# === Path configuration ===
 output_dir: "/path/to/output"
 reference:
   template: "/path/to/template.fa"
@@ -293,33 +291,33 @@ reference:
   germ_model: "/path/to/germline_model"
   soma_model: "/path/to/somatic_model"
 
-# === Simulation 参数 ===
+# === Simulation parameters ===
 simulation:
-  population_size: 100           # 群体大小
-  sub_population_size: 5         # 子群体大小
-  germline_count: 1000           # Germline insertion 数量
-  avg_somatic_count: 50          # 平均 somatic insertion 数量
-  min_distance: 9000             # TE insertion 最小间距 (bp)
-  divergence_rate: 0.001         # 序列分歧率
-  trunc_prob: 0.1                # Truncation 概率
-  nest_prob: 0.1                 # Nested insertion 概率
+  population_size: 100           # Population size
+  sub_population_size: 5         # Sub-population size
+  germline_count: 1000           # Number of germline insertions
+  avg_somatic_count: 50          # Average number of somatic insertions
+  min_distance: 9000             # Minimum TE insertion distance (bp)
+  divergence_rate: 0.001         # Sequence divergence rate
+  trunc_prob: 0.1                # Truncation probability
+  nest_prob: 0.1                 # Nested insertion probability
 
-# === 测序参数 ===
+# === Sequencing parameters ===
 sequencing:
-  depths: [10, 20, 30, 40, 50]   # 测序深度列表
-  protocols: [ccs, clr, ont]     # 测序协议
+  depths: [10, 20, 30, 40, 50]   # Sequencing depths
+  protocols: [ccs, clr, ont]     # Sequencing protocols
   ngs:
     read_length: 150
     insert_size: 350
     insert_std: 50
 
-# === 数据集配置 ===
+# === Dataset configuration ===
 datasets:
-  10: 20       # 深度: 数据集数量
+  10: 20       # Depth: number of datasets
   20: 20
   30: 20
 
-# === SLURM 配置 ===
+# === SLURM configuration ===
 slurm:
   partition: "compute"
   threads:
@@ -335,80 +333,80 @@ slurm:
   time: "24:00:00"
   array_limit: 100
 
-# === Conda 环境 ===
+# === Conda environment ===
 conda_envs:
   simulation: "simulation"
   merge: "simulation"
   minimap2: "simulation"
   label: "TEMP3"
 
-# === 分类参数 ===
+# === Classification parameters ===
 classification:
-  somatic_freq: 0.1               # somatic 频率阈值
+  somatic_freq: 0.1               # Somatic frequency threshold
 
-# === 程序路径 ===
+# === Program paths ===
 programs:
   simulation_dir: "/path/to/simulation"
   label_dir: "/path/to/simulation/label"
   temp3_dir: "/path/to/TEMP3"
 ```
 
-## 物种支持
+## Species Support
 
-### 已有物种特定逻辑
+### Species-Specific Logic
 
-| 物种 | TE 选择权重 |
-|------|------------|
+| Species | TE Selection Weights |
+|---------|---------------------|
 | human | Alu 83%, LINE1 12%, SVA 4%, HERVK 1% |
-| fly（dm6） | P_element 58% 等 |
+| fly (dm6) | P_element 58%, etc. |
 
-### 添加新物种
+### Adding a New Species
 
-新物种使用通用逻辑：
-- **TE 选择**：从 `transposon.fa` 中均匀随机选择
-- **Truncation**：使用 `trunc_prob` 参数控制
-- **Frequency**：使用均匀分布 U(0.1, 1.0)
+New species use general logic:
+- **TE selection**: uniform random selection from `transposon.fa`
+- **Truncation**: controlled by `trunc_prob` parameter
+- **Frequency**: uniform distribution U(0.1, 1.0)
 
-在 `species_configs/` 下创建新的 YAML 配置文件即可。
+Create a new YAML configuration file in `species_configs/` to add a new species.
 
-## 训练数据 vs 测试数据
+## Training Data vs Testing Data
 
-`simulate_training_data/` 和 `simulate_test_data/` 目录分别包含 GRCh38 和 dm6 的训练/测试数据生成脚本：
+The `simulate_training_data/` and `simulate_test_data/` directories contain data generation scripts for GRCh38 and dm6:
 
-- **训练数据**：用于训练 AutoGluon 分类模型，包含完整的 labeling 和分类流程
-- **测试数据**：用于评估模型性能，分为高频和低频 insertion 两类
+- **Training data**: used to train AutoGluon classification models, includes complete labeling and classification workflow
+- **Testing data**: used to evaluate model performance, categorized into high-frequency and low-frequency insertions
 
-模型训练脚本位于 `model_training/training.py`，使用 AutoGluon Tabular 进行二分类训练。
+Model training scripts are located in `model_training/training.py`, using AutoGluon Tabular for binary classification.
 
-## 常见问题
+## FAQ
 
-### Q: 如何为新物种准备参考文件？
+### Q: How do I prepare reference files for a new species?
 
-1. **template.fa**：从参考基因组中提取主要染色体，移除 alternate contigs
-2. **transposon.fa**：从 RepeatMasker 结果中提取 TE consensus 序列
-3. **repeat.bed**：RepeatMasker 输出的 BED 格式
-4. **gap.bed**：从参考基因组中识别 gap 区域
+1. **template.fa**: extract main chromosomes from the reference genome, remove alternate contigs
+2. **transposon.fa**: extract TE consensus sequences from RepeatMasker output
+3. **repeat.bed**: RepeatMasker output in BED format
+4. **gap.bed**: identify gap regions from the reference genome
 
-### Q: SLURM 任务失败怎么办？
+### Q: What should I do if a SLURM task fails?
 
-检查日志文件 `<output_dir>/logs/`，常见问题：
-- 内存不足：调整 `slurm.mem_*` 参数
-- 时间不足：调整 `slurm.time` 参数
-- Conda 环境问题：检查 `conda_envs` 配置是否正确
+Check log files in `<output_dir>/logs/`. Common issues:
+- Insufficient memory: adjust `slurm.mem_*` parameters
+- Insufficient time: adjust `slurm.time` parameters
+- Conda environment issues: verify `conda_envs` configuration
 
-### Q: 如何只生成特定深度的数据集？
+### Q: How do I generate datasets for only specific depths?
 
-修改配置文件中的 `datasets` 部分，例如只生成 30X：
+Modify the `datasets` section in the configuration file, e.g., for 30X only:
 
 ```yaml
 datasets:
   30: 20
 ```
 
-### Q: 如何跳过某些 step？
+### Q: How do I skip certain steps?
 
-使用 `--start` 参数从指定步骤开始，或单独使用 `--step` 执行特定步骤。
+Use the `--start` parameter to begin from a specific step, or `--step` to execute a single step.
 
-### Q: share_pgdf 是什么意思？
+### Q: What does share_pgdf mean?
 
-启用后，不同测序协议（ccs/clr/ont）共享同一套 population genome definition，避免重复生成 PGD 文件。
+When enabled, different sequencing protocols (ccs/clr/ont) share the same population genome definition, avoiding redundant PGD file generation.

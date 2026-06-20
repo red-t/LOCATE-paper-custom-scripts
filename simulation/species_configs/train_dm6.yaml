@@ -1,14 +1,14 @@
-# dm6 (Drosophila melanogaster) 配置示例
-# 使用已有的参考文件
+# dm6 (Drosophila melanogaster) configuration example
+# Using existing reference files
 
 species: dm6
 mode: 1
 share_pgdf: false
 
-# 输出目录
+# Output directory
 output_dir: /zata/zippy/boxu/for_hzr/Simulation
 
-# 参考文件路径
+# Reference file paths
 reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6_template.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/dm6_clean.transposon.fa
@@ -18,7 +18,7 @@ reference:
   soma_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_S_1V30
   germ_model: /zata/zippy/boxu/for_hzr/Software/SimulationTest/data/dm6_G_1V1
 
-# 模拟参数
+# Simulation parameters
 simulation:
   population_size: 100
   sub_population_size: 5
@@ -29,12 +29,12 @@ simulation:
   trunc_prob: 0.1
   nest_prob: 0.1
 
-# 测序参数
+# Sequencing parameters
 sequencing:
   depths: [10, 20, 30, 40, 50]
   protocols: [ccs, clr, ont]
 
-# 数据集配置
+# Dataset configuration
 datasets:
   50: 20
   40: 20
@@ -42,7 +42,7 @@ datasets:
   20: 20
   10: 20
 
-# SLURM 配置
+# SLURM configuration
 slurm:
   partition: 4hours
   exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
@@ -54,7 +54,7 @@ slurm:
   time: "4:00:00"
   array_limit: 10
 
-# Conda 环境
+# Conda environment
 conda_envs:
   default: simulation
   step0: simulation
@@ -64,15 +64,15 @@ conda_envs:
   step7: TEMP3
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 
-# Step 6 分类参数
+# Step 6 classification parameters
 classification:
   somatic_freq: 0.01
 
-# Step 7: ML 训练 Pipeline
+# Step 7: ML training pipeline
 ml_training:
   enabled: true
 
-# 程序路径
+# Program paths
 programs:
   simulation_dir: null
   label_dir: null

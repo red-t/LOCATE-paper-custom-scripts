@@ -1,14 +1,14 @@
-# human (GRCh38) 训练数据配置
-# 模拟参数参考 GRCh38/README.md 和 v4 生产配置
+# human (GRCh38) training data configuration
+# Simulation parameters reference GRCh38/README.md and v4 production config
 
 species: human
 mode: 1
 share_pgdf: false
 
-# 输出目录
+# Output directory
 output_dir: /zata/zippy/boxu/for_hzr/Simulation
 
-# 参考文件路径
+# Reference file paths
 reference:
   template: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.fa
   transposon: /zata/zippy/boxu/for_hzr/Simulation/reference/GRCh38.transposon.fa
@@ -18,7 +18,7 @@ reference:
   soma_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/GRCh38/For_ML/soma_v4/Dedup/GRCh38_S_1V30
   germ_model: /data/tusers/zhongrenhu/for_SMS/dna/simulation/GRCh38/For_ML/germ_v4/Dedup/GRCh38_G_1V1
 
-# 模拟参数
+# Simulation parameters
 simulation:
   population_size: 100
   sub_population_size: 5
@@ -29,12 +29,12 @@ simulation:
   trunc_prob: 0.1
   nest_prob: 0.1
 
-# 测序参数
+# Sequencing parameters
 sequencing:
   depths: [10, 20, 30, 40, 50]
   protocols: [ccs, clr, ont]
 
-# 数据集配置（每 depth 10 个 × 3 protocols = 150 总数据集）
+# Dataset configuration (10 per depth × 3 protocols = 150 total datasets)
 datasets:
   50: 10
   40: 10
@@ -42,7 +42,7 @@ datasets:
   20: 10
   10: 10
 
-# SLURM 配置（人类基因组较大，需要更长时间和更多内存）
+# SLURM configuration (human genome is larger, requires more time and memory)
 slurm:
   partition: 5days
   exclude: "z1076,z1071,z1075,z1077,z1078,z1066,z1085,z1021,z1084"
@@ -54,7 +54,7 @@ slurm:
   time: "12:00:00"
   array_limit: 10
 
-# Conda 环境
+# Conda environment
 conda_envs:
   default: simulation
   step0: simulation
@@ -64,15 +64,15 @@ conda_envs:
   step7: TEMP3
 conda_path: /zata/zippy/boxu/for_hzr/Software/miniforge3/etc/profile.d/conda.sh
 
-# Step 6 分类参数
+# Step 6 classification parameters
 classification:
   somatic_freq: 0.01
 
-# Step 7: ML 训练 Pipeline
+# Step 7: ML training pipeline
 ml_training:
   enabled: true
 
-# 程序路径
+# Program paths
 programs:
   simulation_dir: null
   label_dir: null

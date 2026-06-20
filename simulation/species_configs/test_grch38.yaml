@@ -1,5 +1,5 @@
-# human (GRCh38) 测试数据配置
-# 使用 pbsim3 生成 ONT reads, mode=2 确保物种特异 TE 比例
+# human (GRCh38) test data configuration
+# Use pbsim3 to generate ONT reads, mode=2 ensures species-specific TE ratio
 
 species: human
 mode: 2
