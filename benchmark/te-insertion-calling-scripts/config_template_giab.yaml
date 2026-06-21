@@ -1,0 +1,47 @@
+
+DATA: 
+    REFERENCE:       "template_path1/hg38/hg38.fa"   #reference genome (fasta file)
+    GENOME:          "template_path1/hg38/hg38.fa"   #genome (fasta file)
+    SAMPLE:          "template_sample_fa"    #long reads (a fastq file)
+    WORK_DIRECTORY:  "template_outpath"      #name of output directory
+    TE_DB:           "template_path1/hg38/ALSE.fa"   #Database of TE (a fasta file)
+
+
+
+CHOICE:
+    PIPELINE:
+        OUTSIDER_VARIANT: True
+        INSIDER_VARIANT: False
+        REPORT: False
+    OUTSIDER_VARIANT:
+        CALL_SV: "sniffles" #Posibiliti (sniffles, svim)
+        INTEGRATE_TE_TO_GENOME: False
+        CLIPPED_READS: False
+    INSIDER_VARIANT:
+        DETECT_ALL_TE: False
+    INTERMEDIATE_FILE: True
+
+
+PARAMS:
+    THREADS: 20
+    OUTSIDER_VARIANT:
+        MINIMAP2:
+            PRESET_OPTION: 'template_map_mode' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+            OPTION: ''
+        SAMTOOLS_VIEW:
+            PRESET_OPTION: ''
+        SAMTOOLS_SORT:
+            PRESET_OPTION: ''
+        SAMTOOLS_CALLMD:
+            PRESET_OPTION: ''
+        TSD:
+            SIZE_FLANK: 10
+        TE_DETECTION:
+            CHROM_KEEP: "."  #regular expresion of chromosome; exemple  for Drosophila  "2L,2R,3R,3L,X" ; put "." for keep all chromosome
+            GET_SEQ_REPORT_OPTION: "-m 30" #option get_seq_vcf.py option du fichier de récupération des séquences dans le vcf
+        PARS_BLN_OPTION: "--min-size-percent 80 --min-pident 80 -k 'INS|DEL' "
+    INSIDER_VARIANT:
+        PARS_BLN_OPTION: "--min-size-percent 80 --min-pident 80"
+        MINIMAP2:
+            PRESET_OPTION: 'asm5' # minimap2 preset option is asm5 by default (asm5, asm10, asm20 etc)
+            OPTION: '--cs'        
