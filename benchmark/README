@@ -1,4 +1,7 @@
 
+## All benchmark datasets are available on the LOCATE website:: https://users.wenglab.org/boxu/LOCATE/data.html
+
+
 This directory contains benchmark scripts for running intersection-based
 evaluation, summarising caller performance, calculating breakpoint and sequence
 metrics, and generating publication-ready plots.
